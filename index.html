@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEC NAVI | 40년 물리보안 노하우를 담은 지능형 CCTV 관제 AI</title>
+<meta name="description" content="박람회 전시용 자동 재생 자료 — STEC NAVI 지능형 CCTV 관제 플랫폼 소개">
+<meta property="og:title" content="STEC NAVI | 지능형 CCTV 관제 AI">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#eef2ff">
+
+<style>
+/* ============================================================
+   0. DESIGN TOKENS — 박람회 부스 모니터용 고임팩트 컬러 시스템
+============================================================ */
+:root{
+  --bg-a:#eef2ff; --bg-b:#ecfeff; --bg-c:#fdf4ff;
+  --surface:#ffffff; --surface-soft:rgba(255,255,255,.72);
+  --text:#1e2438; --text-dim:#4b5670; --text-faint:#7885a0;
+  --indigo:#4f46e5; --violet:#7c3aed; --cyan:#06b6d4; --teal:#0d9488;
+  --pink:#db2777; --amber:#d97706; --red:#dc2626; --green:#059669;
+  --grad-1:linear-gradient(135deg,#4f46e5,#06b6d4);
+  --grad-2:linear-gradient(135deg,#7c3aed,#db2777);
+  --grad-3:linear-gradient(135deg,#0d9488,#22c55e);
+  --grad-4:linear-gradient(135deg,#d97706,#dc2626);
+  --radius:22px; --radius-sm:14px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+}
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; overflow:hidden; }
+body{
+  font-family:var(--font); color:var(--text); background:var(--bg-a);
+  -webkit-font-smoothing:antialiased; word-break:keep-all; overflow-wrap:break-word;
+}
+img,svg{ display:block; }
+.icon{ width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.pose-icon{ width:1em; height:1em; }
+
+/* ============================================================
+   1. 상단 브랜드 바 + 언어 전환 + 진행률 바 (전 슬라이드 공통, 항상 다크 테마 고정)
+============================================================ */
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:60; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 clamp(20px,4vw,56px);
+  background:#0a0e17; color:#e8ecf4;
+}
+.brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:1.15rem; letter-spacing:-.01em; }
+.brand-mark{
+  width:34px; height:34px; border-radius:9px; flex-shrink:0;
+  background:linear-gradient(135deg,#22d3ee,#2dd4bf);
+  display:flex; align-items:center; justify-content:center; color:#04222b; font-weight:900; font-size:.85rem;
+}
+.topbar-right{ display:flex; align-items:center; gap:20px; }
+.brand-tag{ font-size:.85rem; color:#9aa7bd; font-weight:600; }
+@media (max-width:760px){ .brand-tag{ display:none; } }
+.langsw{ display:flex; gap:6px; }
+.langsw button{
+  background:transparent; border:1px solid rgba(255,255,255,.22); color:#9aa7bd;
+  font-size:.72rem; font-weight:800; letter-spacing:.03em; padding:6px 12px; border-radius:999px; cursor:pointer;
+}
+.langsw button:hover{ color:#e8ecf4; border-color:rgba(255,255,255,.4); }
+.langsw button.active{ background:linear-gradient(135deg,#22d3ee,#2dd4bf); color:#04222b; border-color:transparent; }
+.progress-track{ position:fixed; top:64px; left:0; right:0; height:4px; z-index:60; background:rgba(30,36,56,.08); }
+.progress-fill{ height:100%; width:0%; background:var(--grad-1); }
+.progress-fill.run{ animation:fillbar 10s linear forwards; }
+@keyframes fillbar{ from{ width:0%; } to{ width:100%; } }
+@media (prefers-reduced-motion: reduce){
+  .progress-fill.run{ animation:none; width:100%; }
+}
+
+/* ============================================================
+   2. 슬라이드 엔진
+============================================================ */
+.slides{ position:relative; width:100vw; height:100vh; }
+.slide{
+  position:absolute; inset:0; padding:calc(68px + 4vh) clamp(24px,6vw,90px) 4vh;
+  display:flex; flex-direction:column; justify-content:center;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transform:scale(1.03);
+}
+.slide.active{ opacity:1; visibility:visible; pointer-events:auto; transform:scale(1); z-index:2; }
+@media (prefers-reduced-motion: no-preference){
+  .slide{ transition:opacity .8s ease, transform .8s ease; }
+}
+.slide.t-indigo{ background:radial-gradient(circle at 14% 18%, rgba(79,70,229,.16), transparent 55%), radial-gradient(circle at 86% 82%, rgba(6,182,212,.16), transparent 55%), var(--bg-a); }
+.slide.t-violet{ background:radial-gradient(circle at 14% 18%, rgba(124,58,237,.16), transparent 55%), radial-gradient(circle at 86% 82%, rgba(219,39,119,.13), transparent 55%), var(--bg-c); }
+.slide.t-teal{ background:radial-gradient(circle at 14% 18%, rgba(13,148,136,.16), transparent 55%), radial-gradient(circle at 86% 82%, rgba(34,197,94,.13), transparent 55%), var(--bg-b); }
+.slide.t-amber{ background:radial-gradient(circle at 14% 18%, rgba(217,119,6,.15), transparent 55%), radial-gradient(circle at 86% 82%, rgba(220,38,38,.11), transparent 55%), var(--bg-a); }
+
+.eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:clamp(.85rem,.7rem+.3vw,1rem); font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--indigo); margin-bottom:14px; }
+.eyebrow .bar{ width:22px; height:3px; border-radius:2px; background:var(--grad-1); }
+.s-title{ font-size:clamp(2rem,1.3rem+3vw,3.6rem); font-weight:800; letter-spacing:-.02em; line-height:1.18; margin:0 0 16px; }
+.s-desc{ font-size:clamp(1rem,.9rem+.4vw,1.25rem); color:var(--text-dim); max-width:920px; margin:0 0 28px; line-height:1.55; }
+.s-head{ margin-bottom:clamp(20px,3vh,40px); }
+
+.grad-text{ background:var(--grad-1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+/* 슬라이드별 등장 애니메이션 */
+@media (prefers-reduced-motion: no-preference){
+  .slide.active .pop{ animation:popIn .6s cubic-bezier(.2,.8,.2,1) both; }
+  .slide.active .pop-1{ animation-delay:.05s; } .slide.active .pop-2{ animation-delay:.12s; }
+  .slide.active .pop-3{ animation-delay:.19s; } .slide.active .pop-4{ animation-delay:.26s; }
+  .slide.active .pop-5{ animation-delay:.33s; } .slide.active .pop-6{ animation-delay:.4s; }
+  .slide.active .pop-7{ animation-delay:.47s; } .slide.active .pop-8{ animation-delay:.54s; }
+}
+@keyframes popIn{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+
+/* ============================================================
+   3. 공용 카드 / 뱃지 컴포넌트
+============================================================ */
+.card{ background:var(--surface); border-radius:var(--radius); padding:clamp(18px,2vw,30px); box-shadow:0 16px 40px rgba(30,36,56,.08); }
+.badge-icon{
+  width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:1.4rem; margin-bottom:14px; flex-shrink:0;
+}
+.tag{ display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:800; letter-spacing:.02em; padding:5px 12px; border-radius:999px; color:#fff; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SVG 아이콘 스프라이트 (숨김) — 모든 아이콘/픽토그램 정의
+============================================================ -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+<defs>
+<!-- 라인 아이콘 (문제/파이프라인/아키텍처/Edge AI/가치) -->
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 15a3 3 0 003 3c1.6 0 3-1 3-2.5S13.6 13 12 13s-3-1-3-2.5S10.4 8 12 8a3 3 0 013 3"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="1" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="23" y2="12"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M22 11.1V12a10 10 0 11-5.9-9.1"/><polyline points="22 4 12 14.1 9 11.1"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+<symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22 6 12 13 2 6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+<symbol id="i-cctv" viewBox="0 0 24 24"><rect x="2" y="7" width="14" height="10" rx="2"/><circle cx="9" cy="12" r="3"/><path d="M16 10l6-3v10l-6-3"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/></symbol>
+<symbol id="i-warehouse" viewBox="0 0 24 24"><path d="M3 21V10l9-6 9 6v11"/><path d="M8 21v-7h8v7"/></symbol>
+<symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M12 3L3 8h18z"/><line x1="5" y1="21" x2="5" y2="10"/><line x1="19" y1="21" x2="19" y2="10"/><line x1="9.5" y1="21" x2="9.5" y2="10"/><line x1="14.5" y1="21" x2="14.5" y2="10"/></symbol>
+<symbol id="i-factory" viewBox="0 0 24 24"><rect x="3" y="13" width="18" height="8"/><polyline points="3 13 7 9 7 13"/><polyline points="7 13 11 9 11 13"/><polyline points="11 13 15 9 15 13"/><rect x="16" y="4" width="3" height="7"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.9 19a9 9 0 1114.2 0"/><line x1="12" y1="13" x2="15" y2="9"/></symbol>
+
+<!-- 행동 시퀀스 픽토그램 (사람 실루엣 + 상황 소품) -->
+<symbol id="pose-normal" viewBox="0 0 100 130">
+  <circle cx="50" cy="30" r="13"/>
+  <rect x="34" y="50" width="32" height="40" rx="14"/>
+  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
+  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
+</symbol>
+<symbol id="pose-look" viewBox="0 0 100 130">
+  <circle cx="50" cy="30" r="13"/>
+  <rect x="34" y="50" width="32" height="40" rx="14"/>
+  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
+  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
+  <path d="M18 20 Q6 30 18 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <path d="M82 20 Q94 30 82 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+</symbol>
+<symbol id="pose-reach" viewBox="0 0 112 130">
+  <circle cx="46" cy="30" r="13"/>
+  <rect x="30" y="50" width="32" height="40" rx="14"/>
+  <rect x="22" y="54" width="8" height="28" rx="4"/>
+  <rect x="58" y="46" width="9" height="32" rx="4" transform="rotate(-42 58 46)"/>
+  <rect x="36" y="88" width="8" height="30" rx="4"/><rect x="48" y="88" width="8" height="30" rx="4"/>
+  <rect x="86" y="16" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>
+  <line x1="96" y1="16" x2="96" y2="36" stroke="currentColor" stroke-width="3"/>
+</symbol>
+<symbol id="pose-conceal" viewBox="0 0 100 130">
+  <circle cx="50" cy="30" r="13"/>
+  <rect x="34" y="50" width="32" height="40" rx="14"/>
+  <rect x="66" y="54" width="8" height="28" rx="4"/>
+  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
+  <path d="M14 68 L10 100 L36 100 L32 68 Z" opacity=".92"/>
+  <path d="M17 68 Q23 54 29 68" fill="none" stroke="currentColor" stroke-width="4"/>
+  <rect x="16" y="62" width="14" height="14" rx="2" fill="#fff" stroke="currentColor" stroke-width="3"/>
+  <polygon points="18,78 28,78 23,88" fill="currentColor"/>
+</symbol>
+<symbol id="pose-flee" viewBox="0 0 130 100">
+  <circle cx="46" cy="24" r="12"/>
+  <rect x="31" y="42" width="30" height="34" rx="13"/>
+  <rect x="23" y="46" width="8" height="24" rx="4"/><rect x="61" y="46" width="8" height="24" rx="4"/>
+  <rect x="33" y="74" width="8" height="24" rx="4"/><rect x="49" y="80" width="8" height="20" rx="4"/>
+  <rect x="90" y="18" width="20" height="52" rx="2" fill="none" stroke="currentColor" stroke-width="4"/>
+  <line x1="110" y1="44" x2="124" y2="44" stroke="currentColor" stroke-width="4"/>
+  <polygon points="120,36 130,44 120,52" fill="currentColor"/>
+  <circle cx="14" cy="24" r="11" fill="none" stroke="currentColor" stroke-width="3"/>
+  <text x="14" y="29" font-size="13" text-anchor="middle" fill="currentColor" font-weight="800">$</text>
+  <line x1="3" y1="13" x2="25" y2="35" stroke="currentColor" stroke-width="3"/>
+</symbol>
+<symbol id="pose-alert" viewBox="0 0 100 130">
+  <circle cx="46" cy="65" r="44" fill="none" stroke="currentColor" stroke-width="3" opacity=".45"/>
+  <circle cx="50" cy="30" r="13"/>
+  <rect x="34" y="50" width="32" height="40" rx="14"/>
+  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
+  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
+  <polygon points="74,36 90,64 58,64" stroke="#fff" stroke-width="2"/>
+  <text x="74" y="60" font-size="16" text-anchor="middle" fill="#fff" font-weight="800">!</text>
+</symbol>
+</defs>
+</svg>
+
+<!-- ============================================================
+     상단 브랜드 바 (고정, 항상 다크 테마) + 언어 전환 + 진행률 바
+============================================================ -->
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">SN</span><span>STEC NAVI</span></div>
+  <div class="topbar-right">
+    <div class="brand-tag" data-i18n="topbar.tag">EDGE AI · 지능형 CCTV 관제 플랫폼</div>
+    <div class="langsw" id="langsw" role="group" aria-label="Language">
+      <button type="button" data-lang="ko" class="active">KO</button>
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="vi">VI</button>
+    </div>
+  </div>
+</header>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<main class="slides" id="slides">
+<!-- ============================================================ SLIDE 1 : HERO ============================================================ -->
+<section class="slide t-indigo active" data-slide>
+  <div class="hero-grid pop pop-1">
+    <div class="eyebrow"><span class="bar"></span><span data-i18n="hero.eyebrow">EDGE AI · 지능형 CCTV 관제 플랫폼</span></div>
+    <h1 class="s-title"><span data-i18n="hero.title1">객체 탐지 모델만큼 빠르게,</span><br><span class="grad-text" data-i18n="hero.title2">생성형 VLM만큼 똑똑하게</span></h1>
+    <p class="s-desc" data-i18n="hero.desc">대한민국 물리보안 1위 기업의 40년 현장 보안 노하우를 <strong>Event Ontology</strong>로 전환했습니다. STEC NAVI는 이 축적된 현장 지식을 AI 판단의 기준으로 활용합니다.</p>
+    <p class="hero-tertiary" data-i18n="hero.tertiary">무엇이 보이는지가 아니라, 무슨 일이 일어나는지를 판단합니다.</p>
+    <div class="hero-badges">
+      <span class="hbadge" data-i18n="hero.badge1">기존 CCTV 그대로 연결</span>
+      <span class="hbadge" data-i18n="hero.badge2">Edge AI 영상 처리</span>
+      <span class="hbadge" data-i18n="hero.badge3">Event Ontology 기반 판정</span>
+    </div>
+  </div>
+  <div class="hero-visual pop pop-2">
+    <div class="hv-top"><span>STEC NAVI · LIVE MONITORING</span><span class="hv-rec"><i></i>REC</span></div>
+    <div class="hv-cams">
+      <div class="hv-cam c-risk">
+        <img class="hv-photo" src="https://loremflickr.com/300/300/fire,flame,warehouse?lock=401" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="hv-label" data-i18n="hero.hv.label1">화염 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag1">위험</span>
+      </div>
+      <div class="hv-cam c-risk">
+        <img class="hv-photo" src="https://loremflickr.com/300/300/corridor,indoor,floor?lock=402" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="hv-label" data-i18n="hero.hv.label2">쓰러짐 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag2">위험</span>
+      </div>
+      <div class="hv-cam c-suspect">
+        <img class="hv-photo" src="https://loremflickr.com/300/300/supermarket,shelf,retail?lock=403" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="hv-label" data-i18n="hero.hv.label3">마트 물품 도난 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag3">의심</span>
+      </div>
+      <div class="hv-cam c-suspect">
+        <img class="hv-photo" src="https://loremflickr.com/300/300/construction,worker,site?lock=404" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="hv-label" data-i18n="hero.hv.label4">안전모 미착용 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag4">의심</span>
+      </div>
+    </div>
+    <div class="hv-risk"><span>Event Risk Score</span><strong data-i18n="hero.hv.riskvalue">의심 단계 · SUSPECT</strong></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 2 : PROBLEM ============================================================ -->
+<section class="slide t-amber" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p2.eyebrow">CURRENT CHALLENGE</span></div>
+    <h2 class="s-title" data-i18n="p2.title">기존 CCTV 관제, 이제 한계에 다다랐습니다</h2></div>
+  <div class="grid-4">
+    <div class="card pop pop-2"><div class="badge-icon" style="background:var(--grad-4)"><svg class="icon"><use href="#i-eye"/></svg></div><h3 data-i18n="p2.c1.title">관제요원의 피로</h3><p data-i18n="p2.c1.desc">장시간 다채널 동시 감시는 사람에게 구조적으로 어렵습니다.</p></div>
+    <div class="card pop pop-3"><div class="badge-icon" style="background:var(--grad-4)"><svg class="icon"><use href="#i-alert"/></svg></div><h3 data-i18n="p2.c2.title">단일 탐지의 한계</h3><p data-i18n="p2.c2.desc">위치만 아는 것으로는 행동의 흐름과 의도를 이해하기 어렵습니다.</p></div>
+    <div class="card pop pop-4"><div class="badge-icon" style="background:var(--grad-4)"><svg class="icon"><use href="#i-coin"/></svg></div><h3 data-i18n="p2.c3.title">범용 VLM의 비용</h3><p data-i18n="p2.c3.desc">모든 채널에 상시 적용하면 연산 비용과 응답 지연이 커집니다.</p></div>
+    <div class="card pop pop-5"><div class="badge-icon" style="background:var(--grad-4)"><svg class="icon"><use href="#i-user"/></svg></div><h3 data-i18n="p2.c4.title">흩어지는 현장 노하우</h3><p data-i18n="p2.c4.desc">숙련자의 판단 기준이 개인에게만 머물고 조직 자산으로 남지 않습니다.</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 3 : SOLUTION PIPELINE ============================================================ -->
+<section class="slide t-indigo" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p3.eyebrow">HOW STEC NAVI WORKS</span></div>
+    <h2 class="s-title" data-i18n="p3.title">STEC NAVI의 판단 흐름</h2>
+    <p class="s-desc" data-i18n="p3.desc">모든 프레임을 무겁게 분석하지 않습니다. 필요한 순간에만 깊게 판단합니다.</p></div>
+  <div class="pipeline-row">
+    <div class="pl-step pop pop-2"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-scan"/></svg></div><b data-i18n="p3.step1">탐지</b><span>Detect</span></div>
+    <div class="pl-arrow pop pop-2">→</div>
+    <div class="pl-step pop pop-3"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-bolt"/></svg></div><b data-i18n="p3.step2">트리거</b><span>Trigger</span></div>
+    <div class="pl-arrow pop pop-3">→</div>
+    <div class="pl-step pop pop-4"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-cpu"/></svg></div><b data-i18n="p3.step3">이해</b><span>Understand</span></div>
+    <div class="pl-arrow pop pop-4">→</div>
+    <div class="pl-step pop pop-5"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-book"/></svg></div><b data-i18n="p3.step4">참조</b><span>Reference</span></div>
+    <div class="pl-arrow pop pop-5">→</div>
+    <div class="pl-step pop pop-6"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-check"/></svg></div><b data-i18n="p3.step5">판정</b><span>Decide</span></div>
+    <div class="pl-arrow pop pop-6">→</div>
+    <div class="pl-step pop pop-7"><div class="pl-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-bell"/></svg></div><b data-i18n="p3.step6">알림</b><span>Alert</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 4 : 3대 아키텍처 ============================================================ -->
+<section class="slide t-violet" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p4.eyebrow">TECHNICAL DIFFERENTIATION</span></div>
+    <h2 class="s-title" data-i18n="p4.title">기술적 차별점 : 3대 핵심 아키텍처</h2></div>
+  <div class="grid-3">
+    <div class="card pop pop-2"><div class="badge-icon" style="background:var(--grad-2)"><svg class="icon"><use href="#i-layers"/></svg></div>
+      <h3 data-i18n="p4.c1.title">CCTV 관제 특화 Encoder</h3>
+      <ul><li data-i18n="p4.c1.li1">시간에 따른 행동 변화를 함께 분석</li><li data-i18n="p4.c1.li2">저조도·원거리·고정 시점 특성 고려</li><li data-i18n="p4.c1.li3">보안 이벤트 특징을 효율적으로 추출</li></ul>
+      <p class="quote" data-i18n="p4.c1.quote">“CCTV 현장을 깊이 이해하는 AI”</p></div>
+    <div class="card pop pop-3"><div class="badge-icon" style="background:var(--grad-2)"><svg class="icon"><use href="#i-target"/></svg></div>
+      <h3 data-i18n="p4.c2.title">경량 판별형 Head</h3>
+      <ul><li data-i18n="p4.c2.li1">설명 생성 대신 이벤트 발생 여부를 판별</li><li data-i18n="p4.c2.li2">SOP·Event Ontology 기준으로 판정 관리</li><li data-i18n="p4.c2.li3">생성형 응답의 변동성을 줄이는 구조 지향</li></ul>
+      <p class="quote" data-i18n="p4.c2.quote">“빠르고 일관되게 판별합니다”</p>
+      <p class="note" data-i18n="p4.c2.note">※ 환경과 탐지 시나리오에 따라 결과가 달라질 수 있습니다.</p></div>
+    <div class="card pop pop-4"><div class="badge-icon" style="background:var(--grad-2)"><svg class="icon"><use href="#i-cpu"/></svg></div>
+      <h3 data-i18n="p4.c3.title">정지된 단일 이미지 기반 → 일정 시간 동안의 행동 시퀀스 기반</h3>
+      <p class="feature-sub" data-i18n="p4.c3.sub">은닉, 도난 등 복합 행동 이벤트 감지에 최적화 되어 있습니다.</p>
+      <p class="quote" data-i18n="p4.c3.quote">“행동의 궤적을 추적해, 복합행위의 의도를 파악합니다”</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 5 : EVENT ONTOLOGY ============================================================ -->
+<section class="slide t-teal" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p5.eyebrow">EVENT ONTOLOGY</span></div>
+    <h2 class="s-title" data-i18n="p5.title">40년의 현장 노하우를 AI가 참조하는 지식으로</h2>
+    <p class="s-desc" data-i18n="p5.desc">대한민국 물리보안 1위 기업이 40년간 축적한 현장 경험과 SOP를 AI가 참조하도록 구조화했습니다.</p></div>
+  <div class="grid-8">
+    <div class="chip pop pop-2"><b>Entity</b><span data-i18n="p5.c1.span">사람·차량·물품·설비</span></div>
+    <div class="chip pop pop-2"><b>Environment</b><span data-i18n="p5.c2.span">창고·매장·은행·공장</span></div>
+    <div class="chip pop pop-3"><b>Scene</b><span data-i18n="p5.c3.span">시간·위치·혼잡도</span></div>
+    <div class="chip pop pop-3"><b>Object</b><span data-i18n="p5.c4.span">가방·상품·현금·도구</span></div>
+    <div class="chip pop pop-4"><b>Action</b><span data-i18n="p5.c5.span">접근·배회·집기·은닉</span></div>
+    <div class="chip pop pop-4"><b>Context</b><span data-i18n="p5.c6.span">순서·지속시간·반복성</span></div>
+    <div class="chip pop pop-5"><b>Intent</b><span data-i18n="p5.c7.span">정상·실수·의심·위험</span></div>
+    <div class="chip pop pop-5"><b>HITL</b><span data-i18n="p5.c8.span">관제요원 확인·조치</span></div>
+  </div>
+  <p class="closing-quote pop pop-6" data-i18n="p5.quote">“AI의 판단 기준은 인터넷의 일반 지식이 아니라, 고객 현장에서 검증된 보안 지식입니다.”</p>
+</section>
+
+<!-- ============================================================ SLIDE 6 : 행동 시퀀스 데모 ============================================================ -->
+<section class="slide t-amber" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p6.eyebrow">BEHAVIOR SEQUENCE DEMO</span></div>
+    <h2 class="s-title" data-i18n="p6.title">행동 시퀀스 데모</h2>
+    <p class="s-desc" data-i18n="p6.desc">다섯 단계의 행동 흐름을 STEC NAVI가 어떻게 연결해 판단하는지 보여줍니다.</p></div>
+  <div class="seq-row">
+    <div class="seq-card pop pop-2"><span class="tag" style="background:var(--indigo)">Sub Key Frame</span>
+      <svg class="pose-icon seq-pose" style="color:var(--indigo)"><use href="#pose-look"/></svg>
+      <h4 data-i18n="p6.c1.title">두리번거림</h4><p data-i18n="p6.c1.desc">시선이 반복적으로 주변을 살핍니다</p></div>
+    <div class="seq-arrow pop pop-2">→</div>
+    <div class="seq-card pop pop-3"><span class="tag" style="background:var(--indigo)">Trigger</span>
+      <svg class="pose-icon seq-pose" style="color:var(--indigo)"><use href="#pose-reach"/></svg>
+      <h4 data-i18n="p6.c2.title">물건 집기</h4><p data-i18n="p6.c2.desc">진열 상품에 손을 뻗어 접촉합니다</p></div>
+    <div class="seq-arrow pop pop-3">→</div>
+    <div class="seq-card pop pop-4"><span class="tag" style="background:var(--amber)">Key Frame</span>
+      <svg class="pose-icon seq-pose" style="color:var(--amber)"><use href="#pose-conceal"/></svg>
+      <h4 data-i18n="p6.c3.title">물건 은닉</h4><p data-i18n="p6.c3.desc">집은 물건이 가방 속으로 사라집니다</p></div>
+    <div class="seq-arrow pop pop-4">→</div>
+    <div class="seq-card pop pop-5"><span class="tag" style="background:var(--amber)">Context Confirmation</span>
+      <svg class="pose-icon seq-pose" style="color:var(--amber)"><use href="#pose-flee"/></svg>
+      <h4 data-i18n="p6.c4.title">결제 없이 이탈</h4><p data-i18n="p6.c4.desc">계산대를 거치지 않고 출구로 향합니다</p></div>
+    <div class="seq-arrow pop pop-5">→</div>
+    <div class="seq-card pop pop-6"><span class="tag" style="background:var(--red)" data-i18n="p6.tag5">Event 판정</span>
+      <svg class="pose-icon seq-pose" style="color:var(--red)"><use href="#pose-alert"/></svg>
+      <h4 data-i18n="p6.c5.title">의심 이벤트 판정</h4><p data-i18n="p6.c5.desc">Ontology·SOP 대조 후 알람 전달</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 7 : DETECTOR & FINDER ============================================================ -->
+<section class="slide t-indigo" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p7.eyebrow">PRODUCT</span></div>
+    <h2 class="s-title">Detector & Finder</h2></div>
+  <div class="grid-2">
+    <div class="card pop pop-2"><div class="badge-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-eye"/></svg></div>
+      <h3 data-i18n="p7.detector.title">Detector — 실시간 이벤트 탐지·관제</h3>
+      <ul><li data-i18n="p7.detector.li1">실시간 이벤트 탐지</li><li data-i18n="p7.detector.li2">이벤트별 알람</li><li data-i18n="p7.detector.li3">카메라·구역별 모니터링</li><li data-i18n="p7.detector.li4">이벤트 하이라이트 자동 생성</li><li data-i18n="p7.detector.li5">관제요원 확인·조치 기록</li></ul></div>
+    <div class="card pop pop-3"><div class="badge-icon" style="background:var(--grad-1)"><svg class="icon"><use href="#i-search"/></svg></div>
+      <h3 data-i18n="p7.finder.title">Finder — 자연어 기반 이벤트 검색</h3>
+      <ul><li data-i18n="p7.finder.li1">자연어로 원하는 장면 검색</li><li data-i18n="p7.finder.li2">날짜·장소·행동·객체 조건 검색</li><li data-i18n="p7.finder.li3">영상 확인 시간 단축</li><li data-i18n="p7.finder.li4">타임라인·Key Frame 결과 제공</li></ul></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 8 : 적용 분야 ============================================================ -->
+<section class="slide t-teal" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p8.eyebrow">USE CASES</span></div>
+    <h2 class="s-title" data-i18n="p8.title">적용 분야</h2></div>
+  <div class="grid-5">
+    <div class="uc-card pop pop-2"><div class="badge-icon" style="background:var(--grad-3)"><svg class="icon"><use href="#i-warehouse"/></svg></div><h4 data-i18n="p8.uc1.title">물류센터·창고</h4><p data-i18n="p8.uc1.desc">무단 반출·제한구역 진입 감지</p></div>
+    <div class="uc-card pop pop-3"><div class="badge-icon" style="background:var(--grad-3)"><svg class="icon"><use href="#i-cart"/></svg></div><h4 data-i18n="p8.uc2.title">리테일·대형마트</h4><p data-i18n="p8.uc2.desc">은닉 후 결제 없는 이탈 감지</p></div>
+    <div class="uc-card pop pop-4"><div class="badge-icon" style="background:var(--grad-3)"><svg class="icon"><use href="#i-bank"/></svg></div><h4 data-i18n="p8.uc3.title">은행·ATM</h4><p data-i18n="p8.uc3.desc">시간대별 이상 접근·배회 감지</p></div>
+    <div class="uc-card pop pop-5"><div class="badge-icon" style="background:var(--grad-3)"><svg class="icon"><use href="#i-factory"/></svg></div><h4 data-i18n="p8.uc4.title">제조공장</h4><p data-i18n="p8.uc4.desc">위험구역 무단 진입 감지</p></div>
+    <div class="uc-card pop pop-6"><div class="badge-icon" style="background:var(--grad-3)"><svg class="icon"><use href="#i-shield"/></svg></div><h4 data-i18n="p8.uc5.title">제한구역·핵심시설</h4><p data-i18n="p8.uc5.desc">비인가 접근·경계 배회 감지</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 9 : EDGE AI ============================================================ -->
+<section class="slide t-teal" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p9.eyebrow">EDGE AI SECURITY</span></div>
+    <h2 class="s-title" data-i18n="p9.title">현장에서 분석하고, 최소한만 전송합니다</h2></div>
+  <div class="grid-6">
+    <div class="card sm pop pop-2"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-link"/></svg><h4 data-i18n="p9.i1.title">기존 CCTV 연결</h4><p data-i18n="p9.i1.desc">카메라 교체 없이 그대로 연결</p></div>
+    <div class="card sm pop pop-3"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-server"/></svg><h4 data-i18n="p9.i2.title">현장 Edge Server</h4><p data-i18n="p9.i2.desc">고객 현장에서 직접 분석</p></div>
+    <div class="card sm pop pop-4"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-lock"/></svg><h4 data-i18n="p9.i3.title">외부 전송 최소화</h4><p data-i18n="p9.i3.desc">원본 영상 외부 전송 최소화</p></div>
+    <div class="card sm pop pop-5"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-clock"/></svg><h4 data-i18n="p9.i4.title">낮은 지연시간</h4><p data-i18n="p9.i4.desc">현장 분석으로 지연 최소화</p></div>
+    <div class="card sm pop pop-6"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-trend"/></svg><h4 data-i18n="p9.i5.title">검증 후 확장</h4><p data-i18n="p9.i5.desc">단계적 채널 확장 지원</p></div>
+    <div class="card sm pop pop-7"><svg class="icon i-sm" style="color:var(--teal)"><use href="#i-shieldcheck"/></svg><h4 data-i18n="p9.i6.title">보안정책 준수</h4><p data-i18n="p9.i6.desc">고객 보안정책에 맞춰 운영</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 10 : 비교표 ============================================================ -->
+<section class="slide t-violet" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p10.eyebrow">COMPARISON</span></div>
+    <h2 class="s-title" data-i18n="p10.title">속도와 지능의 결합</h2></div>
+  <div class="table-wrap pop pop-2">
+    <table class="cmp">
+      <thead><tr><th data-i18n="p10.th0">비교 항목</th><th data-i18n="p10.th1">객체 탐지 모델</th><th data-i18n="p10.th2">범용 생성형 VLM</th><th class="stec">STEC NAVI</th></tr></thead>
+      <tbody>
+        <tr><th data-i18n="p10.r1.h">주요 목적</th><td data-i18n="p10.r1.c1">위치 탐지</td><td data-i18n="p10.r1.c2">장면 설명</td><td class="stec" data-i18n="p10.r1.c3">보안 이벤트 판정</td></tr>
+        <tr><th data-i18n="p10.r2.h">처리 속도</th><td data-i18n="p10.r2.c1">매우 빠름</td><td class="ph" data-i18n="p10.ph">검증 수치 입력 예정</td><td class="stec ph" data-i18n="p10.ph">검증 수치 입력 예정</td></tr>
+        <tr><th data-i18n="p10.r3.h">행동 흐름 분석</th><td data-i18n="p10.r3.c1">제한적</td><td data-i18n="p10.r3.c2">프레임 단위 설명</td><td class="stec" data-i18n="p10.r3.c3">CCTV 특화 Encoder로 분석</td></tr>
+        <tr><th data-i18n="p10.r4.h">판정 일관성</th><td data-i18n="p10.r4.c1">규칙 기반</td><td data-i18n="p10.r4.c2">상황에 따라 달라질 수 있음</td><td class="stec" data-i18n="p10.r4.c3">판별형 Head로 일관성 지향</td></tr>
+        <tr><th data-i18n="p10.r5.h">SOP·Ontology 반영</th><td data-i18n="p10.r5.c1">해당 없음</td><td data-i18n="p10.r5.c2">프롬프트 수준</td><td class="stec" data-i18n="p10.r5.c3">구조적으로 반영</td></tr>
+        <tr><th data-i18n="p10.r6.h">GPU 효율성</th><td data-i18n="p10.r6.c1">높음</td><td data-i18n="p10.r6.c2">상시 적용 시 부담 큼</td><td class="stec ph" data-i18n="p10.ph">검증 수치 입력 예정</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 11 : 고객 가치 ============================================================ -->
+<section class="slide t-violet" data-slide>
+  <div class="s-head pop pop-1"><div class="eyebrow"><span class="bar"></span><span data-i18n="p11.eyebrow">CUSTOMER VALUE</span></div>
+    <h2 class="s-title" data-i18n="p11.title">고객 가치</h2></div>
+  <div class="grid-7">
+    <div class="vchip pop pop-2"><svg class="icon" style="color:var(--violet)"><use href="#i-eye"/></svg><span data-i18n="p11.v1">복합행동 탐지 지원</span></div>
+    <div class="vchip pop pop-2"><svg class="icon" style="color:var(--violet)"><use href="#i-gauge"/></svg><span data-i18n="p11.v2">관제 효율 향상</span></div>
+    <div class="vchip pop pop-3"><svg class="icon" style="color:var(--violet)"><use href="#i-search"/></svg><span data-i18n="p11.v3">영상 검색시간 단축</span></div>
+    <div class="vchip pop pop-3"><svg class="icon" style="color:var(--violet)"><use href="#i-check"/></svg><span data-i18n="p11.v4">판단기준 표준화</span></div>
+    <div class="vchip pop pop-4"><svg class="icon" style="color:var(--violet)"><use href="#i-doc"/></svg><span data-i18n="p11.v5">SOP 디지털 자산화</span></div>
+    <div class="vchip pop pop-4"><svg class="icon" style="color:var(--violet)"><use href="#i-cctv"/></svg><span data-i18n="p11.v6">기존 CCTV 투자 보호</span></div>
+    <div class="vchip pop pop-5"><svg class="icon" style="color:var(--violet)"><use href="#i-cpu"/></svg><span data-i18n="p11.v7">GPU·인프라 효율화</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 12 : CONTACT / CLOSING ============================================================ -->
+<section class="slide t-indigo" data-slide>
+  <div class="contact-wrap pop pop-1">
+    <div class="eyebrow"><span class="bar"></span><span data-i18n="p12.eyebrow">CONTACT</span></div>
+    <h2 class="s-title" data-i18n="p12.title">귀사의 CCTV에 40년의 보안 경험을 연결하십시오</h2>
+    <div class="contact-row">
+      <div class="c-item"><svg class="icon" style="color:var(--indigo)"><use href="#i-mail"/></svg><span id="contactEmail"></span></div>
+      <div class="c-item"><svg class="icon" style="color:var(--indigo)"><use href="#i-phone"/></svg><span id="contactPhone"></span></div>
+    </div>
+    <p class="booth-callout" data-i18n="p12.callout">부스 담당자에게 문의해 주세요 — STEC NAVI, Edge AI 지능형 CCTV 관제 플랫폼</p>
+  </div>
+</section>
+</main>
+
+<div class="dots" id="dots"></div>
+
+<style>
+/* ============================================================
+   4. HERO 전용 레이아웃
+============================================================ */
+.hero-grid{ max-width:760px; }
+.hero-tertiary{ font-size:clamp(1.05rem,1rem+.4vw,1.3rem); font-weight:800; color:var(--teal); margin:0 0 22px; }
+.hero-badges{ display:flex; flex-wrap:wrap; gap:10px; }
+.hbadge{ font-size:.85rem; font-weight:700; background:var(--surface-soft); border:1px solid rgba(30,36,56,.08); padding:8px 14px; border-radius:999px; }
+.hero-visual{
+  position:absolute; right:clamp(20px,5vw,80px); bottom:6vh; width:min(38vw,460px);
+  background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:0 24px 60px rgba(30,36,56,.18);
+}
+@media (max-width:980px), (max-aspect-ratio:1/1){
+  .hero-visual{ position:static; width:min(90vw,420px); margin-top:24px; }
+}
+.hv-top{ display:flex; justify-content:space-between; align-items:center; font-size:.72rem; font-weight:800; color:var(--text-faint); letter-spacing:.04em; margin-bottom:10px; }
+.hv-rec{ display:flex; align-items:center; gap:6px; color:var(--red); }
+.hv-rec i{ width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block; }
+@media (prefers-reduced-motion: no-preference){ .hv-rec i{ animation:blink 1.6s infinite; } }
+@keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+.hv-cams{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.hv-cam{ position:relative; aspect-ratio:1/1; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.hv-cam.c-normal{ background:linear-gradient(160deg,#e0e7ff,#cffafe); color:var(--indigo); }
+.hv-cam.c-suspect{ background:linear-gradient(160deg,#fef3c7,#fde68a); color:var(--amber); }
+.hv-cam.c-risk{ background:linear-gradient(160deg,#fee2e2,#fecaca); color:var(--red); }
+.hv-cam .pose-icon{ width:52%; height:52%; }
+.hv-photo{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  filter:grayscale(.2) sepia(.12) hue-rotate(150deg) saturate(1.3) contrast(1.08) brightness(.85);
+}
+.hv-cam::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.5);
+}
+.hv-label{ position:absolute; top:6px; left:6px; font-size:.55rem; font-weight:800; background:rgba(0,0,0,.35); color:#fff; padding:2px 6px; border-radius:4px; }
+.bbox-tag{ position:absolute; bottom:6px; right:6px; font-size:.6rem; font-weight:800; background:currentColor; color:#fff; padding:2px 7px; border-radius:5px; }
+.hv-risk{ display:flex; justify-content:space-between; align-items:center; background:var(--bg-a); border-radius:10px; padding:10px 14px; font-size:.85rem; }
+.hv-risk strong{ color:var(--amber); }
+
+/* ============================================================
+   5. 그리드 레이아웃 (문제/아키텍처/온톨로지/유즈케이스/엣지/가치)
+============================================================ */
+.grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(14px,1.6vw,24px); }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,1.6vw,24px); }
+.grid-2{ display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(18px,2vw,32px); }
+.grid-5{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(12px,1.4vw,20px); }
+.grid-6{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,1.6vw,22px); }
+.grid-7{ display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.4vw,18px); }
+.grid-8{ display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(10px,1.2vw,16px); margin-bottom:clamp(20px,3vh,34px); }
+@media (max-width:1100px){ .grid-4,.grid-3,.grid-5,.grid-7,.grid-8{ grid-template-columns:repeat(2,1fr); } .grid-6{ grid-template-columns:repeat(2,1fr); } }
+
+.card h3{ font-size:clamp(1.05rem,1rem+.3vw,1.3rem); margin:0 0 10px; font-weight:800; }
+.card h4{ font-size:1rem; margin:10px 0 6px; font-weight:800; }
+.card p{ font-size:.92rem; color:var(--text-dim); margin:0; line-height:1.5; }
+.card ul{ margin:0 0 12px; padding:0; list-style:none; display:flex; flex-direction:column; gap:7px; }
+.card li{ font-size:.9rem; color:var(--text-dim); padding-left:16px; position:relative; }
+.card li::before{ content:"•"; color:var(--indigo); position:absolute; left:0; font-weight:900; }
+.card .feature-line{ font-size:1.05rem; font-weight:800; color:var(--violet); margin:0 0 8px; }
+.card .feature-sub{ font-size:.92rem; color:var(--text-dim); margin:0 0 12px; line-height:1.5; }
+.card .quote{ margin-top:auto; padding-top:12px; border-top:1px dashed rgba(30,36,56,.12); font-weight:800; color:var(--pink); font-size:1rem; }
+.card .note{ font-size:.74rem; color:var(--text-faint); margin-top:6px; }
+.card.sm{ text-align:center; }
+.icon.i-sm{ width:38px; height:38px; margin-bottom:10px; }
+
+.chip{ background:var(--surface); border-radius:var(--radius-sm); padding:16px 18px; box-shadow:0 10px 26px rgba(30,36,56,.07); }
+.chip b{ display:block; font-size:1.02rem; font-weight:800; color:var(--teal); margin-bottom:4px; }
+.chip span{ font-size:.82rem; color:var(--text-dim); }
+.closing-quote{ text-align:center; font-size:clamp(1.05rem,1rem+.5vw,1.5rem); font-weight:800; color:var(--text); }
+
+.uc-card{ background:var(--surface); border-radius:var(--radius); padding:20px 16px; text-align:center; box-shadow:0 12px 30px rgba(30,36,56,.08); }
+.uc-card h4{ font-size:1rem; margin:6px 0; font-weight:800; }
+.uc-card p{ font-size:.8rem; color:var(--text-dim); margin:0; }
+.uc-card .badge-icon{ margin:0 auto 10px; }
+
+.vchip{ display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:999px; padding:14px 18px; font-size:.92rem; font-weight:700; box-shadow:0 8px 20px rgba(30,36,56,.07); }
+.vchip .icon{ width:22px; height:22px; flex-shrink:0; }
+
+/* ============================================================
+   6. 파이프라인 / 시퀀스 가로 레이아웃
+============================================================ */
+.pipeline-row{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px; }
+.pl-step{ display:flex; flex-direction:column; align-items:center; gap:8px; width:120px; text-align:center; }
+.pl-icon{ width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; }
+.pl-step b{ font-size:.95rem; font-weight:800; }
+.pl-step span{ font-size:.7rem; color:var(--text-faint); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.pl-arrow{ font-size:1.4rem; color:var(--text-faint); flex-shrink:0; }
+@media (max-width:1000px){ .pipeline-row{ flex-direction:column; } .pl-arrow{ transform:rotate(90deg); } }
+
+.seq-row{ display:flex; align-items:stretch; justify-content:center; flex-wrap:wrap; gap:8px; }
+.seq-card{ background:var(--surface); border-radius:var(--radius); padding:18px 14px; width:170px; text-align:center; box-shadow:0 12px 30px rgba(30,36,56,.09); display:flex; flex-direction:column; align-items:center; gap:8px; }
+.seq-pose{ width:64px; height:64px; margin:6px 0; }
+.seq-card h4{ font-size:.98rem; font-weight:800; margin:0; }
+.seq-card p{ font-size:.78rem; color:var(--text-dim); margin:0; line-height:1.4; }
+.seq-arrow{ align-self:center; font-size:1.3rem; color:var(--text-faint); flex-shrink:0; }
+@media (max-width:1200px){ .seq-row{ flex-direction:column; } .seq-arrow{ transform:rotate(90deg); } }
+
+/* ============================================================
+   7. 비교표
+============================================================ */
+.table-wrap{ overflow-x:auto; border-radius:var(--radius); background:var(--surface); box-shadow:0 14px 34px rgba(30,36,56,.08); }
+table.cmp{ width:100%; border-collapse:collapse; min-width:760px; font-size:.92rem; }
+table.cmp th, table.cmp td{ padding:14px 18px; text-align:left; border-bottom:1px solid rgba(30,36,56,.07); }
+table.cmp thead th{ background:rgba(79,70,229,.06); font-weight:800; }
+table.cmp tbody tr:last-child td{ border-bottom:none; }
+table.cmp th:first-child, table.cmp td:first-child{ font-weight:700; color:var(--text-dim); width:170px; }
+table.cmp td.stec{ background:rgba(79,70,229,.06); font-weight:700; color:var(--indigo); }
+table.cmp .ph{ color:var(--text-faint); font-style:italic; font-weight:400; }
+
+/* ============================================================
+   8. CONTACT
+============================================================ */
+.contact-wrap{ max-width:820px; }
+.contact-row{ display:flex; gap:28px; flex-wrap:wrap; margin:20px 0 24px; }
+.c-item{ display:flex; align-items:center; gap:10px; font-size:1.05rem; font-weight:700; }
+.c-item .icon{ width:24px; height:24px; }
+.booth-callout{ font-size:1.05rem; color:var(--text-dim); font-weight:600; }
+
+/* ============================================================
+   9. 슬라이드 인디케이터
+============================================================ */
+.dots{ position:fixed; bottom:20px; left:0; right:0; z-index:60; display:flex; justify-content:center; gap:8px; }
+.dot{ width:9px; height:9px; border-radius:50%; background:rgba(30,36,56,.18); border:none; cursor:pointer; padding:0; }
+.dot.active{ background:var(--indigo); width:26px; border-radius:5px; }
+@media (prefers-reduced-motion: no-preference){ .dot{ transition:all .25s ease; } }
+</style>
+
+<script>
+/* ============================================================
+   CONFIG — 자주 바뀌는 값 (검증 필요 문구는 별도 표시)
+   ⚠️ market/years 값을 바꾸면 아래 I18N의 hero.desc, p5.desc, p12.title
+   (ko/en/vi 각각)도 함께 수정해야 문구가 일치합니다.
+============================================================ */
+const CONFIG = {
+  COMPANY_CLAIMS: { marketPosition:'대한민국 물리보안 1위', experienceYears:'40년' },
+  CONTACT: { email:'contact@stecnavi-placeholder.com', phone:'02-0000-0000' },
+  AUTO_MS: 10000, // 슬라이드 자동 전환 간격(ms)
+  DEFAULT_LANG: 'ko'
+};
+
+/* ============================================================
+   다국어(i18n) 사전 — 한국어 / 영어 / 베트남어
+   새 언어를 추가하려면 각 key에 언어 코드를 하나 더 넣고,
+   langsw 버튼을 하나 더 추가하면 됩니다.
+============================================================ */
+const I18N = {
+  'topbar.tag': { ko:'EDGE AI · 지능형 CCTV 관제 플랫폼', en:'EDGE AI · Intelligent CCTV Monitoring Platform', vi:'EDGE AI · Nền tảng giám sát CCTV thông minh' },
+  'hero.eyebrow': { ko:'EDGE AI · 지능형 CCTV 관제 플랫폼', en:'EDGE AI · Intelligent CCTV Monitoring Platform', vi:'EDGE AI · Nền tảng giám sát CCTV thông minh' },
+  'hero.title1': { ko:'객체 탐지 모델만큼 빠르게,', en:'As fast as an object detection model,', vi:'Nhanh như mô hình phát hiện đối tượng,' },
+  'hero.title2': { ko:'생성형 VLM만큼 똑똑하게', en:'as smart as a generative VLM', vi:'thông minh như VLM tạo sinh' },
+  'hero.desc': {
+    ko:'대한민국 물리보안 1위 기업의 40년 현장 보안 노하우를 <strong>Event Ontology</strong>로 전환했습니다. STEC NAVI는 이 축적된 현장 지식을 AI 판단의 기준으로 활용합니다.',
+    en:"We turned 40 years of field security expertise from Korea's No.1 physical security company into an <strong>Event Ontology</strong>. STEC NAVI uses this accumulated field knowledge as the standard for AI judgment.",
+    vi:'Chúng tôi đã chuyển hóa 40 năm kinh nghiệm an ninh thực địa của công ty an ninh vật lý số 1 Hàn Quốc thành <strong>Event Ontology</strong>. STEC NAVI sử dụng kho tri thức thực địa này làm tiêu chuẩn phán đoán của AI.'
+  },
+  'hero.tertiary': { ko:'무엇이 보이는지가 아니라, 무슨 일이 일어나는지를 판단합니다.', en:'Not just what is seen, but what is actually happening.', vi:'Không chỉ nhận diện những gì nhìn thấy, mà phán đoán điều đang thực sự xảy ra.' },
+  'hero.badge1': { ko:'기존 CCTV 그대로 연결', en:'Connects to existing CCTV as-is', vi:'Kết nối trực tiếp với CCTV hiện có' },
+  'hero.badge2': { ko:'Edge AI 영상 처리', en:'Edge AI video processing', vi:'Xử lý video bằng Edge AI' },
+  'hero.badge3': { ko:'Event Ontology 기반 판정', en:'Event Ontology-based judgment', vi:'Phán đoán dựa trên Event Ontology' },
+  'hero.hv.label1': { ko:'화염 감지', en:'Fire Detection', vi:'Phát hiện hỏa hoạn' },
+  'hero.hv.tag1': { ko:'위험', en:'Risk', vi:'Nguy hiểm' },
+  'hero.hv.label2': { ko:'쓰러짐 감지', en:'Fall Detection', vi:'Phát hiện té ngã' },
+  'hero.hv.tag2': { ko:'위험', en:'Risk', vi:'Nguy hiểm' },
+  'hero.hv.label3': { ko:'마트 물품 도난 감지', en:'Retail Theft Detection', vi:'Phát hiện trộm cắp hàng hóa' },
+  'hero.hv.tag3': { ko:'의심', en:'Suspicious', vi:'Nghi vấn' },
+  'hero.hv.label4': { ko:'안전모 미착용 감지', en:'Missing Hard Hat Detection', vi:'Phát hiện không đội mũ bảo hộ' },
+  'hero.hv.tag4': { ko:'의심', en:'Suspicious', vi:'Nghi vấn' },
+  'hero.hv.riskvalue': { ko:'의심 단계 · SUSPECT', en:'Suspicious Level · SUSPECT', vi:'Mức nghi vấn · SUSPECT' },
+
+  'p2.eyebrow': { ko:'CURRENT CHALLENGE', en:'CURRENT CHALLENGE', vi:'CURRENT CHALLENGE' },
+  'p2.title': { ko:'기존 CCTV 관제, 이제 한계에 다다랐습니다', en:'Traditional CCTV monitoring has reached its limits', vi:'Giám sát CCTV truyền thống đã chạm đến giới hạn' },
+  'p2.c1.title': { ko:'관제요원의 피로', en:'Operator Fatigue', vi:'Sự mệt mỏi của nhân viên giám sát' },
+  'p2.c1.desc': { ko:'장시간 다채널 동시 감시는 사람에게 구조적으로 어렵습니다.', en:'Monitoring many channels at once for long hours is structurally difficult for people.', vi:'Giám sát đồng thời nhiều kênh trong thời gian dài vốn dĩ rất khó đối với con người.' },
+  'p2.c2.title': { ko:'단일 탐지의 한계', en:'Limits of Single-Frame Detection', vi:'Giới hạn của phát hiện đơn khung hình' },
+  'p2.c2.desc': { ko:'위치만 아는 것으로는 행동의 흐름과 의도를 이해하기 어렵습니다.', en:'Knowing only location makes it hard to understand the flow and intent of behavior.', vi:'Chỉ biết vị trí thì khó có thể hiểu được diễn biến và ý định của hành vi.' },
+  'p2.c3.title': { ko:'범용 VLM의 비용', en:'Cost of General-Purpose VLMs', vi:'Chi phí của VLM đa dụng' },
+  'p2.c3.desc': { ko:'모든 채널에 상시 적용하면 연산 비용과 응답 지연이 커집니다.', en:'Applying them to every channel at all times raises compute cost and response latency.', vi:'Áp dụng liên tục cho mọi kênh sẽ làm tăng chi phí tính toán và độ trễ phản hồi.' },
+  'p2.c4.title': { ko:'흩어지는 현장 노하우', en:'Fragmented Field Expertise', vi:'Kinh nghiệm thực địa bị phân tán' },
+  'p2.c4.desc': { ko:'숙련자의 판단 기준이 개인에게만 머물고 조직 자산으로 남지 않습니다.', en:"Experts' judgment stays with individuals and is never captured as an organizational asset.", vi:'Tiêu chuẩn phán đoán của chuyên gia chỉ tồn tại ở cá nhân, không trở thành tài sản của tổ chức.' },
+
+  'p3.eyebrow': { ko:'HOW STEC NAVI WORKS', en:'HOW STEC NAVI WORKS', vi:'HOW STEC NAVI WORKS' },
+  'p3.title': { ko:'STEC NAVI의 판단 흐름', en:'How STEC NAVI Makes a Judgment', vi:'Quy trình phán đoán của STEC NAVI' },
+  'p3.desc': { ko:'모든 프레임을 무겁게 분석하지 않습니다. 필요한 순간에만 깊게 판단합니다.', en:'Not every frame is analyzed heavily — deep judgment happens only when needed.', vi:'Không phải khung hình nào cũng được phân tích chuyên sâu. AI chỉ phán đoán sâu khi thực sự cần thiết.' },
+  'p3.step1': { ko:'탐지', en:'Detect', vi:'Phát hiện' },
+  'p3.step2': { ko:'트리거', en:'Trigger', vi:'Kích hoạt' },
+  'p3.step3': { ko:'이해', en:'Understand', vi:'Phân tích' },
+  'p3.step4': { ko:'참조', en:'Reference', vi:'Tham chiếu' },
+  'p3.step5': { ko:'판정', en:'Decide', vi:'Phán định' },
+  'p3.step6': { ko:'알림', en:'Alert', vi:'Cảnh báo' },
+
+  'p4.eyebrow': { ko:'TECHNICAL DIFFERENTIATION', en:'TECHNICAL DIFFERENTIATION', vi:'TECHNICAL DIFFERENTIATION' },
+  'p4.title': { ko:'기술적 차별점 : 3대 핵심 아키텍처', en:'Technical Differentiation: 3 Core Architectures', vi:'Khác biệt công nghệ: 3 kiến trúc cốt lõi' },
+  'p4.c1.title': { ko:'CCTV 관제 특화 Encoder', en:'CCTV-Specialized Encoder', vi:'Encoder chuyên biệt cho giám sát CCTV' },
+  'p4.c1.li1': { ko:'시간에 따른 행동 변화를 함께 분석', en:'Analyzes behavioral change over time', vi:'Phân tích sự thay đổi hành vi theo thời gian' },
+  'p4.c1.li2': { ko:'저조도·원거리·고정 시점 특성 고려', en:'Accounts for low light, long distance, fixed viewpoints', vi:'Tính đến đặc điểm thiếu sáng, khoảng cách xa và góc quay cố định' },
+  'p4.c1.li3': { ko:'보안 이벤트 특징을 효율적으로 추출', en:'Efficiently extracts features relevant to security events', vi:'Trích xuất hiệu quả các đặc trưng liên quan đến sự kiện an ninh' },
+  'p4.c1.quote': { ko:'“CCTV 현장을 깊이 이해하는 AI”', en:'“AI that deeply understands the CCTV site”', vi:'“AI thấu hiểu sâu sắc hiện trường CCTV”' },
+  'p4.c2.title': { ko:'경량 판별형 Head', en:'Lightweight Discriminative Head', vi:'Discriminative Head gọn nhẹ' },
+  'p4.c2.li1': { ko:'설명 생성 대신 이벤트 발생 여부를 판별', en:'Determines whether an event occurred, instead of generating text', vi:'Xác định sự kiện có xảy ra hay không thay vì tạo văn bản mô tả' },
+  'p4.c2.li2': { ko:'SOP·Event Ontology 기준으로 판정 관리', en:'Manages judgment criteria based on SOPs and the Event Ontology', vi:'Quản lý tiêu chí phán định dựa trên SOP và Event Ontology' },
+  'p4.c2.li3': { ko:'생성형 응답의 변동성을 줄이는 구조 지향', en:'Designed to reduce the variability of generative responses', vi:'Hướng đến cấu trúc giảm thiểu sự biến động của phản hồi dạng sinh tạo' },
+  'p4.c2.quote': { ko:'“빠르고 일관되게 판별합니다”', en:'“Fast, consistent event judgment”', vi:'“Phán định nhanh và nhất quán”' },
+  'p4.c2.note': { ko:'※ 환경과 탐지 시나리오에 따라 결과가 달라질 수 있습니다.', en:'※ Results may vary depending on the environment and detection scenario.', vi:'※ Kết quả có thể khác nhau tùy theo môi trường và kịch bản phát hiện.' },
+  'p4.c3.title': { ko:'정지된 단일 이미지 기반 → 일정 시간 동안의 행동 시퀀스 기반', en:'From static single-frame analysis → to behavior sequences over time', vi:'Từ phân tích khung hình tĩnh đơn lẻ → đến chuỗi hành vi theo thời gian' },
+  'p4.c3.sub': { ko:'은닉, 도난 등 복합 행동 이벤트 감지에 최적화 되어 있습니다.', en:'Optimized to detect complex behavioral events such as concealment and theft.', vi:'Được tối ưu để phát hiện các sự kiện hành vi phức hợp như giấu đồ, trộm cắp.' },
+  'p4.c3.quote': { ko:'“행동의 궤적을 추적해, 복합행위의 의도를 파악합니다”', en:'“Tracks the trajectory of behavior to grasp the intent behind complex actions”', vi:'“Theo dõi quỹ đạo hành vi để nắm bắt ý định của hành động phức hợp”' },
+
+  'p5.eyebrow': { ko:'EVENT ONTOLOGY', en:'EVENT ONTOLOGY', vi:'EVENT ONTOLOGY' },
+  'p5.title': { ko:'40년의 현장 노하우를 AI가 참조하는 지식으로', en:'40 Years of Field Expertise, Turned into Knowledge AI Can Reference', vi:'40 năm kinh nghiệm thực địa trở thành tri thức để AI tham chiếu' },
+  'p5.desc': { ko:'대한민국 물리보안 1위 기업이 40년간 축적한 현장 경험과 SOP를 AI가 참조하도록 구조화했습니다.', en:"We structured 40 years of field experience and SOPs from Korea's No.1 physical security company so AI can reference them.", vi:'Chúng tôi đã cấu trúc hóa kinh nghiệm thực địa và quy trình SOP được tích lũy trong 40 năm bởi công ty an ninh vật lý số 1 Hàn Quốc để AI có thể tham chiếu.' },
+  'p5.c1.span': { ko:'사람·차량·물품·설비', en:'People · vehicles · items · equipment', vi:'Người · phương tiện · vật phẩm · thiết bị' },
+  'p5.c2.span': { ko:'창고·매장·은행·공장', en:'Warehouse · store · bank · factory', vi:'Kho bãi · cửa hàng · ngân hàng · nhà máy' },
+  'p5.c3.span': { ko:'시간·위치·혼잡도', en:'Time · location · congestion', vi:'Thời gian · vị trí · mật độ đông người' },
+  'p5.c4.span': { ko:'가방·상품·현금·도구', en:'Bag · product · cash · tool', vi:'Túi xách · hàng hóa · tiền mặt · công cụ' },
+  'p5.c5.span': { ko:'접근·배회·집기·은닉', en:'Approach · loiter · pick up · conceal', vi:'Tiếp cận · lảng vảng · cầm lấy · giấu giếm' },
+  'p5.c6.span': { ko:'순서·지속시간·반복성', en:'Sequence · duration · repetition', vi:'Trình tự · thời lượng · tính lặp lại' },
+  'p5.c7.span': { ko:'정상·실수·의심·위험', en:'Normal · mistake · suspicious · risk', vi:'Bình thường · nhầm lẫn · nghi vấn · nguy hiểm' },
+  'p5.c8.span': { ko:'관제요원 확인·조치', en:'Operator confirmation & response', vi:'Xác nhận và xử lý của nhân viên giám sát' },
+  'p5.quote': { ko:'“AI의 판단 기준은 인터넷의 일반 지식이 아니라, 고객 현장에서 검증된 보안 지식입니다.”', en:"“AI's judgment standard is not general knowledge from the internet, but security knowledge verified on our customers' sites.”", vi:'“Tiêu chuẩn phán đoán của AI không phải là kiến thức chung trên internet, mà là tri thức an ninh đã được kiểm chứng tại hiện trường khách hàng.”' },
+
+  'p6.eyebrow': { ko:'BEHAVIOR SEQUENCE DEMO', en:'BEHAVIOR SEQUENCE DEMO', vi:'BEHAVIOR SEQUENCE DEMO' },
+  'p6.title': { ko:'행동 시퀀스 데모', en:'Behavior Sequence Demo', vi:'Minh họa chuỗi hành vi' },
+  'p6.desc': { ko:'다섯 단계의 행동 흐름을 STEC NAVI가 어떻게 연결해 판단하는지 보여줍니다.', en:'See how STEC NAVI connects a five-step behavior flow to reach its judgment.', vi:'Xem cách STEC NAVI kết nối chuỗi hành vi gồm 5 bước để đưa ra phán đoán.' },
+  'p6.tag5': { ko:'Event 판정', en:'Event Verdict', vi:'Kết luận sự kiện' },
+  'p6.c1.title': { ko:'두리번거림', en:'Looking Around', vi:'Nhìn ngó xung quanh' },
+  'p6.c1.desc': { ko:'시선이 반복적으로 주변을 살핍니다', en:'Gaze repeatedly scans the surroundings', vi:'Ánh mắt liên tục quan sát xung quanh' },
+  'p6.c2.title': { ko:'물건 집기', en:'Picking Up an Item', vi:'Cầm lấy món hàng' },
+  'p6.c2.desc': { ko:'진열 상품에 손을 뻗어 접촉합니다', en:'Reaches out and touches a displayed product', vi:'Đưa tay chạm vào sản phẩm trên kệ' },
+  'p6.c3.title': { ko:'물건 은닉', en:'Concealing the Item', vi:'Giấu món hàng' },
+  'p6.c3.desc': { ko:'집은 물건이 가방 속으로 사라집니다', en:'The item disappears into a bag', vi:'Món hàng đã cầm biến mất vào trong túi xách' },
+  'p6.c4.title': { ko:'결제 없이 이탈', en:'Leaving Without Payment', vi:'Rời đi không thanh toán' },
+  'p6.c4.desc': { ko:'계산대를 거치지 않고 출구로 향합니다', en:'Heads to the exit without passing the checkout', vi:'Đi thẳng ra cửa mà không qua quầy thanh toán' },
+  'p6.c5.title': { ko:'의심 이벤트 판정', en:'Suspicious Event Verdict', vi:'Kết luận sự kiện nghi vấn' },
+  'p6.c5.desc': { ko:'Ontology·SOP 대조 후 알람 전달', en:'Alert issued after cross-checking with Ontology and SOP', vi:'Cảnh báo được gửi sau khi đối chiếu với Ontology và SOP' },
+
+  'p7.eyebrow': { ko:'PRODUCT', en:'PRODUCT', vi:'PRODUCT' },
+  'p7.detector.title': { ko:'Detector — 실시간 이벤트 탐지·관제', en:'Detector — Real-Time Event Detection & Monitoring', vi:'Detector — Phát hiện và giám sát sự kiện theo thời gian thực' },
+  'p7.detector.li1': { ko:'실시간 이벤트 탐지', en:'Real-time event detection', vi:'Phát hiện sự kiện theo thời gian thực' },
+  'p7.detector.li2': { ko:'이벤트별 알람', en:'Event-specific alarms', vi:'Cảnh báo theo từng loại sự kiện' },
+  'p7.detector.li3': { ko:'카메라·구역별 모니터링', en:'Monitoring by camera and zone', vi:'Giám sát theo camera và khu vực' },
+  'p7.detector.li4': { ko:'이벤트 하이라이트 자동 생성', en:'Automatic event highlight generation', vi:'Tự động tạo đoạn video nổi bật của sự kiện' },
+  'p7.detector.li5': { ko:'관제요원 확인·조치 기록', en:'Logs operator confirmation and response', vi:'Ghi lại xác nhận và xử lý của nhân viên giám sát' },
+  'p7.finder.title': { ko:'Finder — 자연어 기반 이벤트 검색', en:'Finder — Natural-Language Event Search', vi:'Finder — Tìm kiếm sự kiện bằng ngôn ngữ tự nhiên' },
+  'p7.finder.li1': { ko:'자연어로 원하는 장면 검색', en:'Search for the scene you want using natural language', vi:'Tìm kiếm cảnh mong muốn bằng ngôn ngữ tự nhiên' },
+  'p7.finder.li2': { ko:'날짜·장소·행동·객체 조건 검색', en:'Search by date, location, behavior, and object conditions', vi:'Tìm kiếm theo điều kiện ngày, địa điểm, hành vi và đối tượng' },
+  'p7.finder.li3': { ko:'영상 확인 시간 단축', en:'Reduces video review time', vi:'Rút ngắn thời gian xem lại video' },
+  'p7.finder.li4': { ko:'타임라인·Key Frame 결과 제공', en:'Provides results as a timeline and Key Frames', vi:'Cung cấp kết quả dưới dạng dòng thời gian và Key Frame' },
+
+  'p8.eyebrow': { ko:'USE CASES', en:'USE CASES', vi:'USE CASES' },
+  'p8.title': { ko:'적용 분야', en:'Use Cases', vi:'Lĩnh vực ứng dụng' },
+  'p8.uc1.title': { ko:'물류센터·창고', en:'Logistics Centers & Warehouses', vi:'Trung tâm logistics & kho bãi' },
+  'p8.uc1.desc': { ko:'무단 반출·제한구역 진입 감지', en:'Detects unauthorized removal and restricted-area entry', vi:'Phát hiện lấy hàng trái phép và xâm nhập khu vực hạn chế' },
+  'p8.uc2.title': { ko:'리테일·대형마트', en:'Retail & Large Marts', vi:'Bán lẻ & siêu thị lớn' },
+  'p8.uc2.desc': { ko:'은닉 후 결제 없는 이탈 감지', en:'Detects concealment followed by leaving without payment', vi:'Phát hiện giấu hàng rồi rời đi không thanh toán' },
+  'p8.uc3.title': { ko:'은행·ATM', en:'Banks & ATMs', vi:'Ngân hàng & ATM' },
+  'p8.uc3.desc': { ko:'시간대별 이상 접근·배회 감지', en:'Detects abnormal access and loitering by time of day', vi:'Phát hiện tiếp cận bất thường và lảng vảng theo khung giờ' },
+  'p8.uc4.title': { ko:'제조공장', en:'Manufacturing Plants', vi:'Nhà máy sản xuất' },
+  'p8.uc4.desc': { ko:'위험구역 무단 진입 감지', en:'Detects unauthorized entry into hazardous zones', vi:'Phát hiện xâm nhập trái phép vào khu vực nguy hiểm' },
+  'p8.uc5.title': { ko:'제한구역·핵심시설', en:'Restricted Areas & Critical Facilities', vi:'Khu vực hạn chế & cơ sở trọng yếu' },
+  'p8.uc5.desc': { ko:'비인가 접근·경계 배회 감지', en:'Detects unauthorized access and perimeter loitering', vi:'Phát hiện tiếp cận trái phép và lảng vảng quanh ranh giới' },
+
+  'p9.eyebrow': { ko:'EDGE AI SECURITY', en:'EDGE AI SECURITY', vi:'EDGE AI SECURITY' },
+  'p9.title': { ko:'현장에서 분석하고, 최소한만 전송합니다', en:'Analyzed On-Site, Transmitting the Bare Minimum', vi:'Phân tích tại hiện trường, chỉ truyền tải tối thiểu' },
+  'p9.i1.title': { ko:'기존 CCTV 연결', en:'Connects Existing CCTV', vi:'Kết nối CCTV hiện có' },
+  'p9.i1.desc': { ko:'카메라 교체 없이 그대로 연결', en:'Connects as-is, no camera replacement needed', vi:'Kết nối trực tiếp, không cần thay camera' },
+  'p9.i2.title': { ko:'현장 Edge Server', en:'On-Site Edge Server', vi:'Edge Server tại hiện trường' },
+  'p9.i2.desc': { ko:'고객 현장에서 직접 분석', en:"Analysis runs directly on the customer's site", vi:'Phân tích trực tiếp tại hiện trường khách hàng' },
+  'p9.i3.title': { ko:'외부 전송 최소화', en:'Minimal External Transmission', vi:'Giảm thiểu truyền tải ra bên ngoài' },
+  'p9.i3.desc': { ko:'원본 영상 외부 전송 최소화', en:'Minimizes transmission of raw video outside the site', vi:'Giảm thiểu việc gửi video gốc ra bên ngoài' },
+  'p9.i4.title': { ko:'낮은 지연시간', en:'Low Latency', vi:'Độ trễ thấp' },
+  'p9.i4.desc': { ko:'현장 분석으로 지연 최소화', en:'On-site analysis minimizes delay', vi:'Phân tích tại chỗ giúp giảm thiểu độ trễ' },
+  'p9.i5.title': { ko:'검증 후 확장', en:'Expand After Verification', vi:'Mở rộng sau khi kiểm chứng' },
+  'p9.i5.desc': { ko:'단계적 채널 확장 지원', en:'Supports phased expansion across channels', vi:'Hỗ trợ mở rộng kênh theo từng giai đoạn' },
+  'p9.i6.title': { ko:'보안정책 준수', en:'Security Policy Compliance', vi:'Tuân thủ chính sách bảo mật' },
+  'p9.i6.desc': { ko:'고객 보안정책에 맞춰 운영', en:"Operates in line with the customer's security policy", vi:'Vận hành phù hợp với chính sách bảo mật của khách hàng' },
+
+  'p10.eyebrow': { ko:'COMPARISON', en:'COMPARISON', vi:'COMPARISON' },
+  'p10.title': { ko:'속도와 지능의 결합', en:'Combining Speed and Intelligence', vi:'Kết hợp tốc độ và trí tuệ' },
+  'p10.th0': { ko:'비교 항목', en:'Criteria', vi:'Tiêu chí' },
+  'p10.th1': { ko:'객체 탐지 모델', en:'Object Detection Model', vi:'Mô hình phát hiện đối tượng' },
+  'p10.th2': { ko:'범용 생성형 VLM', en:'General-Purpose Generative VLM', vi:'VLM tạo sinh đa dụng' },
+  'p10.r1.h': { ko:'주요 목적', en:'Primary Purpose', vi:'Mục đích chính' },
+  'p10.r1.c1': { ko:'위치 탐지', en:'Locate objects', vi:'Xác định vị trí' },
+  'p10.r1.c2': { ko:'장면 설명', en:'Describe the scene', vi:'Mô tả cảnh' },
+  'p10.r1.c3': { ko:'보안 이벤트 판정', en:'Determine security events', vi:'Phán định sự kiện an ninh' },
+  'p10.r2.h': { ko:'처리 속도', en:'Processing Speed', vi:'Tốc độ xử lý' },
+  'p10.r2.c1': { ko:'매우 빠름', en:'Very fast', vi:'Rất nhanh' },
+  'p10.ph': { ko:'검증 수치 입력 예정', en:'Verified figure to be added', vi:'Số liệu kiểm chứng sẽ được cập nhật' },
+  'p10.r3.h': { ko:'행동 흐름 분석', en:'Behavior Flow Analysis', vi:'Phân tích diễn biến hành vi' },
+  'p10.r3.c1': { ko:'제한적', en:'Limited', vi:'Hạn chế' },
+  'p10.r3.c2': { ko:'프레임 단위 설명', en:'Frame-by-frame description', vi:'Mô tả theo từng khung hình' },
+  'p10.r3.c3': { ko:'CCTV 특화 Encoder로 분석', en:'Analyzed via CCTV-specialized Encoder', vi:'Phân tích bằng Encoder chuyên biệt cho CCTV' },
+  'p10.r4.h': { ko:'판정 일관성', en:'Judgment Consistency', vi:'Tính nhất quán trong phán định' },
+  'p10.r4.c1': { ko:'규칙 기반', en:'Rule-based', vi:'Dựa trên quy tắc' },
+  'p10.r4.c2': { ko:'상황에 따라 달라질 수 있음', en:'May vary depending on the situation', vi:'Có thể thay đổi tùy tình huống' },
+  'p10.r4.c3': { ko:'판별형 Head로 일관성 지향', en:'Aims for consistency via the discriminative Head', vi:'Hướng đến tính nhất quán nhờ discriminative Head' },
+  'p10.r5.h': { ko:'SOP·Ontology 반영', en:'SOP & Ontology Integration', vi:'Tích hợp SOP & Ontology' },
+  'p10.r5.c1': { ko:'해당 없음', en:'Not applicable', vi:'Không áp dụng' },
+  'p10.r5.c2': { ko:'프롬프트 수준', en:'Prompt-level only', vi:'Chỉ ở mức prompt' },
+  'p10.r5.c3': { ko:'구조적으로 반영', en:'Structurally integrated', vi:'Được tích hợp có cấu trúc' },
+  'p10.r6.h': { ko:'GPU 효율성', en:'GPU Efficiency', vi:'Hiệu suất GPU' },
+  'p10.r6.c1': { ko:'높음', en:'High', vi:'Cao' },
+  'p10.r6.c2': { ko:'상시 적용 시 부담 큼', en:'Heavy burden when always-on', vi:'Gánh nặng lớn nếu áp dụng liên tục' },
+
+  'p11.eyebrow': { ko:'CUSTOMER VALUE', en:'CUSTOMER VALUE', vi:'CUSTOMER VALUE' },
+  'p11.title': { ko:'고객 가치', en:'Customer Value', vi:'Giá trị mang lại cho khách hàng' },
+  'p11.v1': { ko:'복합행동 탐지 지원', en:'Supports complex behavior detection', vi:'Hỗ trợ phát hiện hành vi phức hợp' },
+  'p11.v2': { ko:'관제 효율 향상', en:'Improves monitoring efficiency', vi:'Nâng cao hiệu quả giám sát' },
+  'p11.v3': { ko:'영상 검색시간 단축', en:'Shortens video search time', vi:'Rút ngắn thời gian tìm kiếm video' },
+  'p11.v4': { ko:'판단기준 표준화', en:'Standardizes judgment criteria', vi:'Chuẩn hóa tiêu chí phán đoán' },
+  'p11.v5': { ko:'SOP 디지털 자산화', en:'Turns SOPs into digital assets', vi:'Số hóa SOP thành tài sản' },
+  'p11.v6': { ko:'기존 CCTV 투자 보호', en:'Protects existing CCTV investment', vi:'Bảo vệ khoản đầu tư CCTV hiện có' },
+  'p11.v7': { ko:'GPU·인프라 효율화', en:'Optimizes GPU and infrastructure', vi:'Tối ưu hóa GPU và hạ tầng' },
+
+  'p12.eyebrow': { ko:'CONTACT', en:'CONTACT', vi:'CONTACT' },
+  'p12.title': { ko:'귀사의 CCTV에 40년의 보안 경험을 연결하십시오', en:'Connect 40 Years of Security Experience to Your CCTV', vi:'Kết nối 40 năm kinh nghiệm an ninh với hệ thống CCTV của bạn' },
+  'p12.callout': { ko:'부스 담당자에게 문의해 주세요 — STEC NAVI, Edge AI 지능형 CCTV 관제 플랫폼', en:'Please speak with our booth staff — STEC NAVI, the Edge AI intelligent CCTV monitoring platform', vi:'Vui lòng liên hệ nhân viên tại gian hàng — STEC NAVI, nền tảng giám sát CCTV thông minh Edge AI' }
+};
+
+const ARIA_GOTO = {
+  ko: n => `슬라이드 ${n}로 이동`,
+  en: n => `Go to slide ${n}`,
+  vi: n => `Đi tới slide ${n}`
+};
+
+let currentLang = CONFIG.DEFAULT_LANG;
+
+function applyLang(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const entry = I18N[key];
+    if(!entry) return;
+    el.innerHTML = entry[lang] || entry.ko;
+  });
+  document.querySelectorAll('#langsw button').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+  document.querySelectorAll('#dots .dot').forEach((d, i) => {
+    d.setAttribute('aria-label', ARIA_GOTO[lang](i + 1));
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('contactEmail').textContent = CONFIG.CONTACT.email;
+  document.getElementById('contactPhone').textContent = CONFIG.CONTACT.phone;
+
+  document.querySelectorAll('#langsw button').forEach(btn => {
+    btn.addEventListener('click', () => applyLang(btn.getAttribute('data-lang')));
+  });
+
+  applyLang(CONFIG.DEFAULT_LANG);
+  initSlideshow();
+});
+
+/* ============================================================
+   슬라이드 자동 전환 엔진
+   - 약 10초마다 자동으로 다음 화면으로 전환, 마지막 다음엔 처음으로 순환
+   - 화면 클릭 / ←→ 방향키 / 하단 점(dot)으로 수동 전환도 가능(다음 자동전환 타이머 재시작)
+   - prefers-reduced-motion 환경에서도 "자동 전환" 자체는 유지되며, 전환 애니메이션만 생략됩니다
+============================================================ */
+function initSlideshow(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap = document.getElementById('dots');
+  const progressFill = document.getElementById('progressFill');
+  let idx = 0;
+  let timer = null;
+
+  dotsWrap.innerHTML = slides.map((_, i) => `<button type="button" class="dot" data-i="${i}" aria-label="${ARIA_GOTO[currentLang](i+1)}"></button>`).join('');
+  const dots = Array.from(dotsWrap.querySelectorAll('.dot'));
+
+  function render(){
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    restartProgress();
+  }
+  function restartProgress(){
+    progressFill.classList.remove('run');
+    void progressFill.offsetWidth; // 리플로우 강제 → 애니메이션 재시작
+    progressFill.classList.add('run');
+  }
+  function goTo(i){ idx = (i + slides.length) % slides.length; render(); }
+  function next(){ goTo(idx + 1); }
+  function prev(){ goTo(idx - 1); }
+  function startTimer(){
+    clearInterval(timer);
+    timer = setInterval(() => { if(!document.hidden) next(); }, CONFIG.AUTO_MS);
+  }
+
+  dots.forEach(d => d.addEventListener('click', () => { goTo(Number(d.getAttribute('data-i'))); startTimer(); }));
+  document.getElementById('slides').addEventListener('click', () => { next(); startTimer(); });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowRight' || e.key === ' '){ next(); startTimer(); }
+    if(e.key === 'ArrowLeft'){ prev(); startTimer(); }
+  });
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) startTimer(); });
+
+  render();
+  startTimer();
+}
+</script>
+</body>
+</html>
