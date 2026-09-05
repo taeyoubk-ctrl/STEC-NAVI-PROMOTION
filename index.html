@@ -155,60 +155,166 @@ img,svg{ display:block; }
 <symbol id="i-factory" viewBox="0 0 24 24"><rect x="3" y="13" width="18" height="8"/><polyline points="3 13 7 9 7 13"/><polyline points="7 13 11 9 11 13"/><polyline points="11 13 15 9 15 13"/><rect x="16" y="4" width="3" height="7"/></symbol>
 <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.9 19a9 9 0 1114.2 0"/><line x1="12" y1="13" x2="15" y2="9"/></symbol>
 
-<!-- 행동 시퀀스 픽토그램 (사람 실루엣 + 상황 소품) -->
-<symbol id="pose-normal" viewBox="0 0 100 130">
-  <circle cx="50" cy="30" r="13"/>
-  <rect x="34" y="50" width="32" height="40" rx="14"/>
-  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
-  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
+<!-- 행동 시퀀스 캐릭터 픽토그램 — 동일 인물(피부·헤어·후드·바지·신발 동일 색상)이
+     5개 프레임 내내 등장하도록 통일했습니다. 위험도 변화는 카드의 뱃지 색으로 표현합니다. -->
+<linearGradient id="gradHoodie" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#4a5d84"/><stop offset="1" stop-color="#2b3550"/>
+</linearGradient>
+<linearGradient id="gradHair" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#3a2c1f"/><stop offset="1" stop-color="#1a130c"/>
+</linearGradient>
+<symbol id="pose-look" viewBox="0 0 120 150">
+  <ellipse cx="60" cy="142" rx="22" ry="4" fill="#000" opacity=".12"/>
+  <path d="M53 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M67 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M53 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <path d="M67 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <ellipse cx="53" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="53" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <ellipse cx="67" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="67" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <path d="M46 50 Q60 40 74 50 Q74 58 60 58 Q46 58 46 50 Z" fill="url(#gradHoodie)" opacity=".9"/>
+  <rect x="40" y="54" width="40" height="52" rx="18" fill="url(#gradHoodie)"/>
+  <rect x="40" y="96" width="40" height="10" rx="5" fill="#2b3550" opacity=".5"/>
+  <line x1="60" y1="66" x2="60" y2="100" stroke="#1e2740" stroke-width="2" opacity=".5"/>
+  <path d="M50 54 L60 66 L70 54 Z" fill="#e2e8f0"/>
+  <path d="M42 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="42" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <path d="M78 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="78" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <circle cx="42" cy="92" r="6.5" fill="#eeb98d"/><circle cx="78" cy="92" r="6.5" fill="#eeb98d"/>
+  <rect x="54" y="44" width="12" height="12" fill="#eeb98d"/>
+  <ellipse cx="44" cy="33" rx="3" ry="4.5" fill="#eeb98d"/><ellipse cx="76" cy="33" rx="3" ry="4.5" fill="#eeb98d"/>
+  <circle cx="60" cy="32" r="15" fill="#eeb98d"/>
+  <path d="M45 32a15 15 0 0130 0c0-11-7-19-15-19s-15 8-15 19z" fill="url(#gradHair)"/>
+  <path d="M53 27q2-2 5-1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M62 26q3-1 5 1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="55.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/><ellipse cx="65.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/>
+  <path d="M60 33q1.5 2 0 3.5" stroke="#c99269" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M56 39q4 2 8 0" stroke="#a85d3f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <path d="M28 24 Q16 32 28 42" fill="none" stroke="#0891b2" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M92 24 Q104 32 92 42" fill="none" stroke="#0891b2" stroke-width="3.5" stroke-linecap="round"/>
 </symbol>
-<symbol id="pose-look" viewBox="0 0 100 130">
-  <circle cx="50" cy="30" r="13"/>
-  <rect x="34" y="50" width="32" height="40" rx="14"/>
-  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
-  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
-  <path d="M18 20 Q6 30 18 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-  <path d="M82 20 Q94 30 82 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+<symbol id="pose-reach" viewBox="0 0 140 150">
+  <ellipse cx="55" cy="142" rx="22" ry="4" fill="#000" opacity=".12"/>
+  <path d="M48 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M62 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M48 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <path d="M62 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <ellipse cx="48" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="48" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <ellipse cx="62" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="62" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <path d="M41 50 Q55 40 69 50 Q69 58 55 58 Q41 58 41 50 Z" fill="url(#gradHoodie)" opacity=".9"/>
+  <rect x="35" y="54" width="40" height="52" rx="18" fill="url(#gradHoodie)"/>
+  <rect x="35" y="96" width="40" height="10" rx="5" fill="#2b3550" opacity=".5"/>
+  <line x1="55" y1="66" x2="55" y2="100" stroke="#1e2740" stroke-width="2" opacity=".5"/>
+  <path d="M45 54 L55 66 L65 54 Z" fill="#e2e8f0"/>
+  <path d="M37 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="37" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <circle cx="37" cy="92" r="6.5" fill="#eeb98d"/>
+  <path d="M73 60 L100 32" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="100" cy="32" r="6.5" fill="#eeb98d"/>
+  <rect x="49" y="44" width="12" height="12" fill="#eeb98d"/>
+  <ellipse cx="39" cy="33" rx="3" ry="4.5" fill="#eeb98d"/><ellipse cx="71" cy="33" rx="3" ry="4.5" fill="#eeb98d"/>
+  <circle cx="55" cy="32" r="15" fill="#eeb98d"/>
+  <path d="M40 32a15 15 0 0130 0c0-11-7-19-15-19s-15 8-15 19z" fill="url(#gradHair)"/>
+  <path d="M48 27q2-2 5-1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M57 26q3-1 5 1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="50.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/><ellipse cx="60.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/>
+  <path d="M55 33q1.5 2 0 3.5" stroke="#c99269" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M51 39q4 2 8 0" stroke="#a85d3f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <rect x="104" y="12" width="20" height="20" rx="3" fill="none" stroke="#0891b2" stroke-width="3"/>
+  <line x1="114" y1="12" x2="114" y2="32" stroke="#0891b2" stroke-width="2"/>
 </symbol>
-<symbol id="pose-reach" viewBox="0 0 112 130">
-  <circle cx="46" cy="30" r="13"/>
-  <rect x="30" y="50" width="32" height="40" rx="14"/>
-  <rect x="22" y="54" width="8" height="28" rx="4"/>
-  <rect x="58" y="46" width="9" height="32" rx="4" transform="rotate(-42 58 46)"/>
-  <rect x="36" y="88" width="8" height="30" rx="4"/><rect x="48" y="88" width="8" height="30" rx="4"/>
-  <rect x="86" y="16" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>
-  <line x1="96" y1="16" x2="96" y2="36" stroke="currentColor" stroke-width="3"/>
+<symbol id="pose-conceal" viewBox="0 0 120 150">
+  <ellipse cx="60" cy="142" rx="22" ry="4" fill="#000" opacity=".12"/>
+  <path d="M53 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M67 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M53 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <path d="M67 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <ellipse cx="53" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="53" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <ellipse cx="67" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="67" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <path d="M46 50 Q60 40 74 50 Q74 58 60 58 Q46 58 46 50 Z" fill="url(#gradHoodie)" opacity=".9"/>
+  <rect x="40" y="54" width="40" height="52" rx="18" fill="url(#gradHoodie)"/>
+  <rect x="40" y="96" width="40" height="10" rx="5" fill="#2b3550" opacity=".5"/>
+  <line x1="60" y1="66" x2="60" y2="100" stroke="#1e2740" stroke-width="2" opacity=".5"/>
+  <path d="M50 54 L60 66 L70 54 Z" fill="#e2e8f0"/>
+  <path d="M42 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="42" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <circle cx="42" cy="92" r="6.5" fill="#eeb98d"/>
+  <path d="M78 60 L64 82" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="64" cy="82" r="6.5" fill="#eeb98d"/>
+  <rect x="54" y="44" width="12" height="12" fill="#eeb98d"/>
+  <ellipse cx="44" cy="33" rx="3" ry="4.5" fill="#eeb98d"/><ellipse cx="76" cy="33" rx="3" ry="4.5" fill="#eeb98d"/>
+  <circle cx="60" cy="32" r="15" fill="#eeb98d"/>
+  <path d="M45 32a15 15 0 0130 0c0-11-7-19-15-19s-15 8-15 19z" fill="url(#gradHair)"/>
+  <path d="M53 27q2-2 5-1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M62 26q3-1 5 1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="55.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/><ellipse cx="65.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/>
+  <path d="M60 33q1.5 2 0 3.5" stroke="#c99269" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M56 39q4 2 8 0" stroke="#a85d3f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <path d="M46 92 L42 118 L70 118 L66 92 Z" fill="#2b3550" opacity=".92"/>
+  <rect x="50" y="84" width="15" height="15" rx="2" fill="#ffffff" stroke="#0891b2" stroke-width="2.5"/>
+  <polygon points="52,100 64,100 58,110" fill="#0891b2"/>
 </symbol>
-<symbol id="pose-conceal" viewBox="0 0 100 130">
-  <circle cx="50" cy="30" r="13"/>
-  <rect x="34" y="50" width="32" height="40" rx="14"/>
-  <rect x="66" y="54" width="8" height="28" rx="4"/>
-  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
-  <path d="M14 68 L10 100 L36 100 L32 68 Z" opacity=".92"/>
-  <path d="M17 68 Q23 54 29 68" fill="none" stroke="currentColor" stroke-width="4"/>
-  <rect x="16" y="62" width="14" height="14" rx="2" fill="#fff" stroke="currentColor" stroke-width="3"/>
-  <polygon points="18,78 28,78 23,88" fill="currentColor"/>
+<symbol id="pose-flee" viewBox="0 0 170 150">
+  <ellipse cx="70" cy="142" rx="26" ry="4" fill="#000" opacity=".12"/>
+  <path d="M60 108 L50 138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M78 108 L90 136" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <ellipse cx="48" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="48" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <ellipse cx="92" cy="138" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="92" cy="141" rx="8.5" ry="2" fill="#374151"/>
+  <path d="M56 50 Q70 40 84 50 Q84 58 70 58 Q56 58 56 50 Z" fill="url(#gradHoodie)" opacity=".9"/>
+  <rect x="50" y="54" width="40" height="52" rx="18" fill="url(#gradHoodie)"/>
+  <rect x="50" y="96" width="40" height="10" rx="5" fill="#2b3550" opacity=".5"/>
+  <line x1="70" y1="66" x2="70" y2="100" stroke="#1e2740" stroke-width="2" opacity=".5"/>
+  <path d="M60 54 L70 66 L80 54 Z" fill="#e2e8f0"/>
+  <path d="M60 60 L48 88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="48" cy="88" r="6.5" fill="#eeb98d"/>
+  <path d="M88 60 L108 80" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="108" cy="80" r="6.5" fill="#eeb98d"/>
+  <rect x="64" y="44" width="12" height="12" fill="#eeb98d"/>
+  <ellipse cx="54" cy="33" rx="3" ry="4.5" fill="#eeb98d"/><ellipse cx="86" cy="33" rx="3" ry="4.5" fill="#eeb98d"/>
+  <circle cx="70" cy="32" r="15" fill="#eeb98d"/>
+  <path d="M55 32a15 15 0 0130 0c0-11-7-19-15-19s-15 8-15 19z" fill="url(#gradHair)"/>
+  <path d="M63 27q2-2 5-1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M72 26q3-1 5 1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="65.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/><ellipse cx="75.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/>
+  <path d="M70 33q1.5 2 0 3.5" stroke="#c99269" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M66 39q4 2 8 0" stroke="#a85d3f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <rect x="132" y="28" width="22" height="60" rx="2" fill="none" stroke="#0891b2" stroke-width="3.5"/>
+  <line x1="154" y1="58" x2="163" y2="58" stroke="#0891b2" stroke-width="3.5"/>
+  <polygon points="158,51 168,58 158,65" fill="#0891b2"/>
+  <circle cx="16" cy="28" r="13" fill="none" stroke="#dc2626" stroke-width="3"/>
+  <text x="16" y="33" font-size="14" text-anchor="middle" fill="#dc2626" font-weight="800">$</text>
+  <line x1="5" y1="17" x2="27" y2="39" stroke="#dc2626" stroke-width="3"/>
 </symbol>
-<symbol id="pose-flee" viewBox="0 0 130 100">
-  <circle cx="46" cy="24" r="12"/>
-  <rect x="31" y="42" width="30" height="34" rx="13"/>
-  <rect x="23" y="46" width="8" height="24" rx="4"/><rect x="61" y="46" width="8" height="24" rx="4"/>
-  <rect x="33" y="74" width="8" height="24" rx="4"/><rect x="49" y="80" width="8" height="20" rx="4"/>
-  <rect x="90" y="18" width="20" height="52" rx="2" fill="none" stroke="currentColor" stroke-width="4"/>
-  <line x1="110" y1="44" x2="124" y2="44" stroke="currentColor" stroke-width="4"/>
-  <polygon points="120,36 130,44 120,52" fill="currentColor"/>
-  <circle cx="14" cy="24" r="11" fill="none" stroke="currentColor" stroke-width="3"/>
-  <text x="14" y="29" font-size="13" text-anchor="middle" fill="currentColor" font-weight="800">$</text>
-  <line x1="3" y1="13" x2="25" y2="35" stroke="currentColor" stroke-width="3"/>
-</symbol>
-<symbol id="pose-alert" viewBox="0 0 100 130">
-  <circle cx="46" cy="65" r="44" fill="none" stroke="currentColor" stroke-width="3" opacity=".45"/>
-  <circle cx="50" cy="30" r="13"/>
-  <rect x="34" y="50" width="32" height="40" rx="14"/>
-  <rect x="26" y="54" width="8" height="28" rx="4"/><rect x="66" y="54" width="8" height="28" rx="4"/>
-  <rect x="40" y="88" width="8" height="30" rx="4"/><rect x="52" y="88" width="8" height="30" rx="4"/>
-  <polygon points="74,36 90,64 58,64" stroke="#fff" stroke-width="2"/>
-  <text x="74" y="60" font-size="16" text-anchor="middle" fill="#fff" font-weight="800">!</text>
+<symbol id="pose-alert" viewBox="0 0 120 150">
+  <circle cx="60" cy="90" r="54" fill="none" stroke="#dc2626" stroke-width="3" opacity=".4"/>
+  <ellipse cx="60" cy="142" rx="22" ry="4" fill="#000" opacity=".12"/>
+  <path d="M53 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M67 106 V138" stroke="#26303f" stroke-width="13" stroke-linecap="round"/>
+  <path d="M53 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <path d="M67 110 V134" stroke="#1a212c" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>
+  <ellipse cx="53" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="53" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <ellipse cx="67" cy="140" rx="8.5" ry="5.5" fill="#111827"/><ellipse cx="67" cy="143" rx="8.5" ry="2" fill="#374151"/>
+  <path d="M46 50 Q60 40 74 50 Q74 58 60 58 Q46 58 46 50 Z" fill="url(#gradHoodie)" opacity=".9"/>
+  <rect x="40" y="54" width="40" height="52" rx="18" fill="url(#gradHoodie)"/>
+  <rect x="40" y="96" width="40" height="10" rx="5" fill="#2b3550" opacity=".5"/>
+  <line x1="60" y1="66" x2="60" y2="100" stroke="#1e2740" stroke-width="2" opacity=".5"/>
+  <path d="M50 54 L60 66 L70 54 Z" fill="#e2e8f0"/>
+  <path d="M42 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="42" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <path d="M78 60 V88" stroke="url(#gradHoodie)" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="78" cy="88" rx="7" ry="4" fill="#2b3550"/>
+  <circle cx="42" cy="92" r="6.5" fill="#eeb98d"/><circle cx="78" cy="92" r="6.5" fill="#eeb98d"/>
+  <rect x="54" y="44" width="12" height="12" fill="#eeb98d"/>
+  <ellipse cx="44" cy="33" rx="3" ry="4.5" fill="#eeb98d"/><ellipse cx="76" cy="33" rx="3" ry="4.5" fill="#eeb98d"/>
+  <circle cx="60" cy="32" r="15" fill="#eeb98d"/>
+  <path d="M45 32a15 15 0 0130 0c0-11-7-19-15-19s-15 8-15 19z" fill="url(#gradHair)"/>
+  <path d="M53 27q2-2 5-1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M62 26q3-1 5 1" stroke="#2b2118" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="55.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/><ellipse cx="65.5" cy="31.5" rx="1.8" ry="2.2" fill="#2b2118"/>
+  <path d="M60 33q1.5 2 0 3.5" stroke="#c99269" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M56 39q4 2 8 0" stroke="#a85d3f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <polygon points="86,44 104,74 68,74" fill="#dc2626" stroke="#fff" stroke-width="2"/>
+  <text x="86" y="70" font-size="17" text-anchor="middle" fill="#fff" font-weight="800">!</text>
 </symbol>
 </defs>
 </svg>
@@ -232,6 +338,7 @@ img,svg{ display:block; }
 <main class="slides" id="slides">
 <!-- ============================================================ SLIDE 1 : HERO ============================================================ -->
 <section class="slide t-indigo active" data-slide>
+  <div class="hero-row">
   <div class="hero-grid pop pop-1">
     <div class="eyebrow"><span class="bar"></span><span data-i18n="hero.eyebrow">EDGE AI · 지능형 CCTV 관제 플랫폼</span></div>
     <h1 class="s-title"><span data-i18n="hero.title1">객체 탐지 모델만큼 빠르게,</span><br><span class="grad-text" data-i18n="hero.title2">생성형 VLM만큼 똑똑하게</span></h1>
@@ -243,27 +350,11 @@ img,svg{ display:block; }
       <span class="hbadge" data-i18n="hero.badge3">Event Ontology 기반 판정</span>
     </div>
   </div>
+  <!-- 실시간 관제 대시보드 목업 (Live Video Wall) — 제공해주신 이미지 파일을 그대로 사용 -->
   <div class="hero-visual pop pop-2">
-    <div class="hv-top"><span>STEC NAVI · LIVE MONITORING</span><span class="hv-rec"><i></i>REC</span></div>
-    <div class="hv-cams">
-      <div class="hv-cam c-risk">
-        <img class="hv-photo" src="https://loremflickr.com/300/300/fire,flame,warehouse?lock=401" alt="" loading="lazy" onerror="this.style.display='none'">
-        <span class="hv-label" data-i18n="hero.hv.label1">화염 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag1">위험</span>
-      </div>
-      <div class="hv-cam c-risk">
-        <img class="hv-photo" src="https://loremflickr.com/300/300/corridor,indoor,floor?lock=402" alt="" loading="lazy" onerror="this.style.display='none'">
-        <span class="hv-label" data-i18n="hero.hv.label2">쓰러짐 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag2">위험</span>
-      </div>
-      <div class="hv-cam c-suspect">
-        <img class="hv-photo" src="https://loremflickr.com/300/300/supermarket,shelf,retail?lock=403" alt="" loading="lazy" onerror="this.style.display='none'">
-        <span class="hv-label" data-i18n="hero.hv.label3">마트 물품 도난 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag3">의심</span>
-      </div>
-      <div class="hv-cam c-suspect">
-        <img class="hv-photo" src="https://loremflickr.com/300/300/construction,worker,site?lock=404" alt="" loading="lazy" onerror="this.style.display='none'">
-        <span class="hv-label" data-i18n="hero.hv.label4">안전모 미착용 감지</span><span class="bbox-tag" data-i18n="hero.hv.tag4">의심</span>
-      </div>
-    </div>
-    <div class="hv-risk"><span>Event Risk Score</span><strong data-i18n="hero.hv.riskvalue">의심 단계 · SUSPECT</strong></div>
+    <img src="assets/live-video-wall.png" alt="STEC NAVI Live Video Wall 관제 대시보드 예시 화면" onerror="this.style.display='none'">
+    <p class="mock-note">* <span data-i18n="hero.lvw.disclaimer">실제 고객 데이터가 아닌 예시 화면입니다</span></p>
+  </div>
   </div>
 </section>
 
@@ -345,23 +436,23 @@ img,svg{ display:block; }
     <p class="s-desc" data-i18n="p6.desc">다섯 단계의 행동 흐름을 STEC NAVI가 어떻게 연결해 판단하는지 보여줍니다.</p></div>
   <div class="seq-row">
     <div class="seq-card pop pop-2"><span class="tag" style="background:var(--indigo)">Sub Key Frame</span>
-      <svg class="pose-icon seq-pose" style="color:var(--indigo)"><use href="#pose-look"/></svg>
+      <svg class="pose-icon seq-pose"><use href="#pose-look"/></svg>
       <h4 data-i18n="p6.c1.title">두리번거림</h4><p data-i18n="p6.c1.desc">시선이 반복적으로 주변을 살핍니다</p></div>
     <div class="seq-arrow pop pop-2">→</div>
     <div class="seq-card pop pop-3"><span class="tag" style="background:var(--indigo)">Trigger</span>
-      <svg class="pose-icon seq-pose" style="color:var(--indigo)"><use href="#pose-reach"/></svg>
+      <svg class="pose-icon seq-pose"><use href="#pose-reach"/></svg>
       <h4 data-i18n="p6.c2.title">물건 집기</h4><p data-i18n="p6.c2.desc">진열 상품에 손을 뻗어 접촉합니다</p></div>
     <div class="seq-arrow pop pop-3">→</div>
     <div class="seq-card pop pop-4"><span class="tag" style="background:var(--amber)">Key Frame</span>
-      <svg class="pose-icon seq-pose" style="color:var(--amber)"><use href="#pose-conceal"/></svg>
+      <svg class="pose-icon seq-pose"><use href="#pose-conceal"/></svg>
       <h4 data-i18n="p6.c3.title">물건 은닉</h4><p data-i18n="p6.c3.desc">집은 물건이 가방 속으로 사라집니다</p></div>
     <div class="seq-arrow pop pop-4">→</div>
     <div class="seq-card pop pop-5"><span class="tag" style="background:var(--amber)">Context Confirmation</span>
-      <svg class="pose-icon seq-pose" style="color:var(--amber)"><use href="#pose-flee"/></svg>
+      <svg class="pose-icon seq-pose"><use href="#pose-flee"/></svg>
       <h4 data-i18n="p6.c4.title">결제 없이 이탈</h4><p data-i18n="p6.c4.desc">계산대를 거치지 않고 출구로 향합니다</p></div>
     <div class="seq-arrow pop pop-5">→</div>
     <div class="seq-card pop pop-6"><span class="tag" style="background:var(--red)" data-i18n="p6.tag5">Event 판정</span>
-      <svg class="pose-icon seq-pose" style="color:var(--red)"><use href="#pose-alert"/></svg>
+      <svg class="pose-icon seq-pose"><use href="#pose-alert"/></svg>
       <h4 data-i18n="p6.c5.title">의심 이벤트 판정</h4><p data-i18n="p6.c5.desc">Ontology·SOP 대조 후 알람 전달</p></div>
   </div>
 </section>
@@ -461,40 +552,16 @@ img,svg{ display:block; }
 /* ============================================================
    4. HERO 전용 레이아웃
 ============================================================ */
-.hero-grid{ max-width:760px; }
+.hero-row{ display:flex; align-items:center; gap:clamp(24px,4vw,56px); flex-wrap:wrap; }
+.hero-grid{ flex:1 1 380px; max-width:640px; }
 .hero-tertiary{ font-size:clamp(1.05rem,1rem+.4vw,1.3rem); font-weight:800; color:var(--teal); margin:0 0 22px; }
 .hero-badges{ display:flex; flex-wrap:wrap; gap:10px; }
 .hbadge{ font-size:.85rem; font-weight:700; background:var(--surface-soft); border:1px solid rgba(30,36,56,.08); padding:8px 14px; border-radius:999px; }
-.hero-visual{
-  position:absolute; right:clamp(20px,5vw,80px); bottom:6vh; width:min(38vw,460px);
-  background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:0 24px 60px rgba(30,36,56,.18);
-}
-@media (max-width:980px), (max-aspect-ratio:1/1){
-  .hero-visual{ position:static; width:min(90vw,420px); margin-top:24px; }
-}
-.hv-top{ display:flex; justify-content:space-between; align-items:center; font-size:.72rem; font-weight:800; color:var(--text-faint); letter-spacing:.04em; margin-bottom:10px; }
-.hv-rec{ display:flex; align-items:center; gap:6px; color:var(--red); }
-.hv-rec i{ width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block; }
-@media (prefers-reduced-motion: no-preference){ .hv-rec i{ animation:blink 1.6s infinite; } }
-@keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
-.hv-cams{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-.hv-cam{ position:relative; aspect-ratio:1/1; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.hv-cam.c-normal{ background:linear-gradient(160deg,#e0e7ff,#cffafe); color:var(--indigo); }
-.hv-cam.c-suspect{ background:linear-gradient(160deg,#fef3c7,#fde68a); color:var(--amber); }
-.hv-cam.c-risk{ background:linear-gradient(160deg,#fee2e2,#fecaca); color:var(--red); }
-.hv-cam .pose-icon{ width:52%; height:52%; }
-.hv-photo{
-  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  filter:grayscale(.2) sepia(.12) hue-rotate(150deg) saturate(1.3) contrast(1.08) brightness(.85);
-}
-.hv-cam::after{
-  content:""; position:absolute; inset:0; pointer-events:none;
-  box-shadow:inset 0 0 18px rgba(0,0,0,.5);
-}
-.hv-label{ position:absolute; top:6px; left:6px; font-size:.55rem; font-weight:800; background:rgba(0,0,0,.35); color:#fff; padding:2px 6px; border-radius:4px; }
-.bbox-tag{ position:absolute; bottom:6px; right:6px; font-size:.6rem; font-weight:800; background:currentColor; color:#fff; padding:2px 7px; border-radius:5px; }
-.hv-risk{ display:flex; justify-content:space-between; align-items:center; background:var(--bg-a); border-radius:10px; padding:10px 14px; font-size:.85rem; }
-.hv-risk strong{ color:var(--amber); }
+
+/* Live Video Wall 대시보드 목업 — 제공된 스크린샷 이미지를 그대로 사용 */
+.hero-visual{ flex:1 1 480px; max-width:660px; }
+.hero-visual img{ width:100%; height:auto; display:block; border-radius:14px; box-shadow:0 24px 60px rgba(30,36,56,.18); }
+.mock-note{ font-size:.64rem; color:var(--text-faint); text-align:center; margin:8px 0 0; }
 
 /* ============================================================
    5. 그리드 레이아웃 (문제/아키텍처/온톨로지/유즈케이스/엣지/가치)
@@ -546,8 +613,8 @@ img,svg{ display:block; }
 @media (max-width:1000px){ .pipeline-row{ flex-direction:column; } .pl-arrow{ transform:rotate(90deg); } }
 
 .seq-row{ display:flex; align-items:stretch; justify-content:center; flex-wrap:wrap; gap:8px; }
-.seq-card{ background:var(--surface); border-radius:var(--radius); padding:18px 14px; width:170px; text-align:center; box-shadow:0 12px 30px rgba(30,36,56,.09); display:flex; flex-direction:column; align-items:center; gap:8px; }
-.seq-pose{ width:64px; height:64px; margin:6px 0; }
+.seq-card{ background:var(--surface); border-radius:var(--radius); padding:18px 14px; width:198px; text-align:center; box-shadow:0 12px 30px rgba(30,36,56,.09); display:flex; flex-direction:column; align-items:center; gap:8px; }
+.seq-pose{ width:100px; height:100px; margin:6px 0; }
 .seq-card h4{ font-size:.98rem; font-weight:800; margin:0; }
 .seq-card p{ font-size:.78rem; color:var(--text-dim); margin:0; line-height:1.4; }
 .seq-arrow{ align-self:center; font-size:1.3rem; color:var(--text-faint); flex-shrink:0; }
@@ -615,15 +682,7 @@ const I18N = {
   'hero.badge1': { ko:'기존 CCTV 그대로 연결', en:'Connects to existing CCTV as-is', vi:'Kết nối trực tiếp với CCTV hiện có' },
   'hero.badge2': { ko:'Edge AI 영상 처리', en:'Edge AI video processing', vi:'Xử lý video bằng Edge AI' },
   'hero.badge3': { ko:'Event Ontology 기반 판정', en:'Event Ontology-based judgment', vi:'Phán đoán dựa trên Event Ontology' },
-  'hero.hv.label1': { ko:'화염 감지', en:'Fire Detection', vi:'Phát hiện hỏa hoạn' },
-  'hero.hv.tag1': { ko:'위험', en:'Risk', vi:'Nguy hiểm' },
-  'hero.hv.label2': { ko:'쓰러짐 감지', en:'Fall Detection', vi:'Phát hiện té ngã' },
-  'hero.hv.tag2': { ko:'위험', en:'Risk', vi:'Nguy hiểm' },
-  'hero.hv.label3': { ko:'마트 물품 도난 감지', en:'Retail Theft Detection', vi:'Phát hiện trộm cắp hàng hóa' },
-  'hero.hv.tag3': { ko:'의심', en:'Suspicious', vi:'Nghi vấn' },
-  'hero.hv.label4': { ko:'안전모 미착용 감지', en:'Missing Hard Hat Detection', vi:'Phát hiện không đội mũ bảo hộ' },
-  'hero.hv.tag4': { ko:'의심', en:'Suspicious', vi:'Nghi vấn' },
-  'hero.hv.riskvalue': { ko:'의심 단계 · SUSPECT', en:'Suspicious Level · SUSPECT', vi:'Mức nghi vấn · SUSPECT' },
+  'hero.lvw.disclaimer': { ko:'실제 고객 데이터가 아닌 예시 화면입니다', en:'Illustrative example, not real customer data', vi:'Màn hình minh họa, không phải dữ liệu khách hàng thực tế' },
 
   'p2.eyebrow': { ko:'CURRENT CHALLENGE', en:'CURRENT CHALLENGE', vi:'CURRENT CHALLENGE' },
   'p2.title': { ko:'기존 CCTV 관제, 이제 한계에 다다랐습니다', en:'Traditional CCTV monitoring has reached its limits', vi:'Giám sát CCTV truyền thống đã chạm đến giới hạn' },
